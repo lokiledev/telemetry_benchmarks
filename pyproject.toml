@@ -1,0 +1,10 @@
+[project]
+name = "telemetry-benchmarks"
+version = "0.1.0"
+description = "A project to benchmark the performance of the most popular robotics recording sdk's for Python."
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "foxglove-sdk>=0.15.3",
+    "rerun-sdk>=0.27.0",
+]
