@@ -2,7 +2,6 @@
 Benchmark the performance of recording a representative point cloud channel.
 """
 
-import os
 import time
 from datetime import timedelta
 
@@ -17,6 +16,8 @@ from foxglove.schemas import (
 )
 from loguru import logger
 from numpy.typing import NDArray
+
+from config import OUTPUT_DIR
 
 SAMPLING_RATE_HZ = 1000
 DURATION_S = 3600
@@ -54,7 +55,7 @@ def make_pointcloud() -> NDArray[np.float64]:
 
 def benchmark_foxglove_pointcloud(data: NDArray[np.float64]) -> None:
     channel = PointCloudChannel(topic="/log1")
-    with foxglove.open_mcap("pointcloud.mcap", allow_overwrite=True):
+    with foxglove.open_mcap(OUTPUT_DIR / "pointcloud.mcap", allow_overwrite=True):
         start_time = time.perf_counter()
         fields = [
             PackedElementField(
@@ -77,7 +78,7 @@ def benchmark_foxglove_pointcloud(data: NDArray[np.float64]) -> None:
                 log_time=int(pointcloud_row[0] * 1e9),
             )
         elapsed = timedelta(seconds=time.perf_counter() - start_time)
-    mcap_size = os.path.getsize("pointcloud.mcap")
+    mcap_size = (OUTPUT_DIR / "pointcloud.mcap").stat().st_size
     logger.info(
         f"Foxglove MCAP size: {mcap_size / 1024 / 1024:.2f} MB, write time: {elapsed}"
     )
@@ -85,19 +86,19 @@ def benchmark_foxglove_pointcloud(data: NDArray[np.float64]) -> None:
 
 def benchmark_rerun_pointcloud(data: NDArray[np.float64]) -> None:
     rr.init("pointcloud")
-    rr.save("pointcloud.rrd")
+    rr.save(OUTPUT_DIR / "pointcloud.rrd")
     start_time = time.perf_counter()
     for pointcloud_row in data:
         rr.set_time("log1", duration=pointcloud_row[0])
         rr.log("log1", rr.Points3D(pointcloud_row[1:]))
     elapsed = timedelta(seconds=time.perf_counter() - start_time)
-    rrd_size = os.path.getsize("pointcloud.rrd")
+    rrd_size = (OUTPUT_DIR / "pointcloud.rrd").stat().st_size
     logger.info(f"Rerun size: {rrd_size / 1024 / 1024:.2f} MB, write time: {elapsed}")
 
 
 def benchmark_rerun_pointcloud_column(data: NDArray[np.float64]) -> None:
     rr.init("pointcloud_column")
-    rr.save("pointcloud_column.rrd")
+    rr.save(OUTPUT_DIR / "pointcloud_column.rrd")
 
     timestamps = data[:, 0]
     n_points = (data.shape[1] - 1) // 3  # Subtract 1 for timestamp column
@@ -113,11 +114,12 @@ def benchmark_rerun_pointcloud_column(data: NDArray[np.float64]) -> None:
     )
     elapsed = timedelta(seconds=time.perf_counter() - start_time)
     rr.init("pointcloud_column")  # force flush
-    rrd_size = os.path.getsize("pointcloud_column.rrd")
+    rrd_size = (OUTPUT_DIR / "pointcloud_column.rrd").stat().st_size
     logger.info(f"Rerun size: {rrd_size / 1024 / 1024:.2f} MB, write time: {elapsed}")
 
 
 def main():
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     points = make_pointcloud()
     benchmark_foxglove_pointcloud(points)
     benchmark_rerun_pointcloud(points)
