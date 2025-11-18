@@ -1,44 +1,9 @@
-from abc import ABC, abstractmethod
-from typing import Literal, Tuple
+from typing import Literal
 
 import genesis as gs
 import numpy as np
 
-
-class Logger(ABC):
-    def __init__(self):
-        pass
-
-    @abstractmethod
-    def log_joint_states(self, qpos: np.ndarray) -> None:
-        pass
-
-    @abstractmethod
-    def log_video(self, video: np.ndarray) -> None:
-        pass
-
-    @abstractmethod
-    def log_end_effector_pose(self, pose: np.ndarray) -> None:
-        pass
-
-    @abstractmethod
-    def log_transforms(self, transforms: list[Tuple[str, np.ndarray]]) -> None:
-        pass
-
-
-class NullLogger(Logger):
-    def log_joint_states(self, qpos: np.ndarray) -> None:
-        pass
-
-    def log_video(self, video: np.ndarray) -> None:
-        pass
-
-    def log_end_effector_pose(self, pose: np.ndarray) -> None:
-        pass
-
-    def log_transforms(self, transforms: list[Tuple[str, np.ndarray]]) -> None:
-        pass
-
+from telemetry_benchmarks.sim.datalogger import Logger, NullLogger
 
 GraspState = Literal["idle", "grasp", "lift", "end"]
 
@@ -99,11 +64,11 @@ class Env:
         self.finger_pos = 0.5
 
     def state_from_timestamp(self, timestamp: float) -> GraspState:
-        if timestamp <= 1.0:
+        if timestamp <= 0.1:
             return "idle"
-        elif timestamp <= 2.0:
+        elif timestamp <= 0.6:
             return "grasp"
-        elif timestamp <= 3.0:
+        elif timestamp <= 1.5:
             return "lift"
         else:
             return "end"
