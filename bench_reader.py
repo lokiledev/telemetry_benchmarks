@@ -57,7 +57,7 @@ def make_video_frame() -> NDArray[np.uint8]:
 def make_codec(
     width: int, height: int, fps: int = VIDEO_FRAME_RATE_HZ
 ) -> VideoCodecContext:
-    codec = av.Codec("libx265", "w")
+    codec = av.Codec("libsvtav1", "w")
     codec_ctx = codec.create(kind="video")
     codec_ctx.width = width
     codec_ctx.height = height
@@ -189,7 +189,7 @@ def write_mcap_dataset(dataset: Dataset, output_path: Path) -> None:
                 CompressedVideo(
                     data=packet_data,
                     timestamp=Timestamp.from_epoch_secs(packet_timestamp),
-                    format="h265",
+                    format="av1",
                 ),
                 log_time=int(packet_timestamp * 1e9),
             )
@@ -199,8 +199,7 @@ def write_rerun_dataset(dataset: Dataset, output_path: Path) -> None:
     """Write dataset to Rerun format."""
     rr.init("rerun_dataset_benchmark")
     rr.save(output_path)
-    # WTF doesn't support av1
-    rr.log("video", rr.VideoStream(codec=rr.VideoCodec.H265), static=True)
+    rr.log("video", rr.VideoStream(codec=rr.VideoCodec.AV1), static=True)
 
     # Write robot poses
     for i, timestamp in enumerate(tqdm(dataset.timestamps, desc="Writing Rerun")):

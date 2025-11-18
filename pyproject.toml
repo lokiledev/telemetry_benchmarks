@@ -11,6 +11,9 @@ dependencies = [
     "mcap>=1.3.0",
     "numpy>=2.2.6",
     "pandas>=2.3.3",
-    "rerun-sdk>=0.27.0",
+    "rerun-sdk>=0.27.2",
     "tqdm>=4.67.1",
 ]
+
+[tool.uv.index]
+extra-index-url = ["https://build.rerun.io/commit/0c88e94/wheels"]
