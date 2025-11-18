@@ -1,4 +1,3 @@
-import argparse
 from abc import ABC, abstractmethod
 from typing import Literal, Tuple
 
@@ -27,24 +26,57 @@ class Logger(ABC):
         pass
 
 
+class NullLogger(Logger):
+    def log_joint_states(self, qpos: np.ndarray) -> None:
+        pass
+
+    def log_video(self, video: np.ndarray) -> None:
+        pass
+
+    def log_end_effector_pose(self, pose: np.ndarray) -> None:
+        pass
+
+    def log_transforms(self, transforms: list[Tuple[str, np.ndarray]]) -> None:
+        pass
+
+
 GraspState = Literal["idle", "grasp", "lift", "end"]
 
 
 class Env:
-    def __init__(self, scene: gs.Scene, logger: Logger | None = None):
-        self.logger = logger
+    def __init__(self, logger: Logger | None = None):
+        self.logger = logger or NullLogger()
         self.step_number = 0
         self.phase: GraspState = "idle"
-        self.scene = scene
-        self.plane = scene.add_entity(
+        self.scene = gs.Scene(
+            viewer_options=gs.options.ViewerOptions(
+                camera_pos=(3, -1, 1.5),
+                camera_lookat=(0.0, 0.0, 0.5),
+                camera_fov=30,
+                res=(960, 640),
+                max_FPS=60,
+            ),
+            sim_options=gs.options.SimOptions(
+                dt=0.01,
+            ),
+            rigid_options=gs.options.RigidOptions(
+                box_box_detection=True,
+            ),
+            show_viewer=True,
+        )
+        self.plane = self.scene.add_entity(
             gs.morphs.Plane(),
         )
-        self.franka = scene.add_entity(
+        self.franka = self.scene.add_entity(
             gs.morphs.MJCF(file="xml/franka_emika_panda/panda.xml"),
         )
-        self.cube = scene.add_entity(
+        self.cube = self.scene.add_entity(
             gs.morphs.Box(size=(0.04, 0.04, 0.04), pos=(0.65, 0.0, 0.02)),
         )
+        self.camera = self.scene.add_camera(
+            res=(960, 640), pos=(3, -1, 1.5), lookat=(0.0, 0.0, 0.5), fov=30
+        )
+
         self.scene.build()
 
         self.motors_dof = np.arange(7)
@@ -64,22 +96,23 @@ class Env:
         self.franka.control_dofs_position(self.qpos[:-2], self.motors_dof)
         self.finger_pos = 0.5
 
-    def state_from_index(self, index: int) -> GraspState:
-        if index <= 100:
+    def state_from_timestamp(self, timestamp: float) -> GraspState:
+        if timestamp <= 1.0:
             return "idle"
-        elif index <= 200:
+        elif timestamp <= 2.0:
             return "grasp"
-        elif index <= 300:
+        elif timestamp <= 3.0:
             return "lift"
         else:
             return "end"
 
     def observe(self) -> None:
-        pass
+        color, _, _, _ = self.camera.render()
+        self.logger.log_video(color)
 
-    def act(self, step_number: int) -> None:
+    def act(self, timestamp: float) -> None:
         finger_pos = -0.0
-        self.phase = self.state_from_index(step_number)
+        self.phase = self.state_from_timestamp(timestamp)
         if self.phase == "idle":
             pass
         if self.phase == "grasp":
@@ -104,36 +137,16 @@ class Env:
     def run(self) -> None:
         while self.phase != "end":
             self.observe()
-            self.act(self.step_number)
+            self.act(self.step_number * self.scene.dt)
             self.scene.step()
             self.step_number += 1
 
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-v", "--vis", action="store_true", default=True)
-    args = parser.parse_args()
-
     ########################## init ##########################
     gs.init(backend=gs.gpu, precision="32")
-    ########################## create a scene ##########################
-    scene = gs.Scene(
-        viewer_options=gs.options.ViewerOptions(
-            camera_pos=(3, -1, 1.5),
-            camera_lookat=(0.0, 0.0, 0.5),
-            camera_fov=30,
-            res=(960, 640),
-            max_FPS=60,
-        ),
-        sim_options=gs.options.SimOptions(
-            dt=0.01,
-        ),
-        rigid_options=gs.options.RigidOptions(
-            box_box_detection=True,
-        ),
-        show_viewer=args.vis,
-    )
-    env = Env(scene, None)
+    env = Env()
+    ############## run the environment #####################
     env.run()
 
 
