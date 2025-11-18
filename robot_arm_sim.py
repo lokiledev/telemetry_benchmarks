@@ -1,0 +1,141 @@
+import argparse
+from abc import ABC, abstractmethod
+from typing import Literal, Tuple
+
+import genesis as gs
+import numpy as np
+
+
+class Logger(ABC):
+    def __init__(self):
+        pass
+
+    @abstractmethod
+    def log_joint_states(self, qpos: np.ndarray) -> None:
+        pass
+
+    @abstractmethod
+    def log_video(self, video: np.ndarray) -> None:
+        pass
+
+    @abstractmethod
+    def log_end_effector_pose(self, pose: np.ndarray) -> None:
+        pass
+
+    @abstractmethod
+    def log_transforms(self, transforms: list[Tuple[str, np.ndarray]]) -> None:
+        pass
+
+
+GraspState = Literal["idle", "grasp", "lift", "end"]
+
+
+class Env:
+    def __init__(self, scene: gs.Scene, logger: Logger | None = None):
+        self.logger = logger
+        self.step_number = 0
+        self.phase: GraspState = "idle"
+        self.scene = scene
+        self.plane = scene.add_entity(
+            gs.morphs.Plane(),
+        )
+        self.franka = scene.add_entity(
+            gs.morphs.MJCF(file="xml/franka_emika_panda/panda.xml"),
+        )
+        self.cube = scene.add_entity(
+            gs.morphs.Box(size=(0.04, 0.04, 0.04), pos=(0.65, 0.0, 0.02)),
+        )
+        self.scene.build()
+
+        self.motors_dof = np.arange(7)
+        self.fingers_dof = np.arange(7, 9)
+        self.qpos = np.array(
+            [-1.0124, 1.5559, 1.3662, -1.6878, -1.5799, 1.7757, 1.4602, 0.04, 0.04]
+        )
+        self.franka.set_qpos(self.qpos)
+        self.scene.step()
+
+        self.end_effector = self.franka.get_link("hand")
+        self.qpos = self.franka.inverse_kinematics(
+            link=self.end_effector,
+            pos=np.array([0.65, 0.0, 0.135]),
+            quat=np.array([0, 1, 0, 0]),
+        )
+        self.franka.control_dofs_position(self.qpos[:-2], self.motors_dof)
+        self.finger_pos = 0.5
+
+    def state_from_index(self, index: int) -> GraspState:
+        if index <= 100:
+            return "idle"
+        elif index <= 200:
+            return "grasp"
+        elif index <= 300:
+            return "lift"
+        else:
+            return "end"
+
+    def observe(self) -> None:
+        pass
+
+    def act(self, step_number: int) -> None:
+        finger_pos = -0.0
+        self.phase = self.state_from_index(step_number)
+        if self.phase == "idle":
+            pass
+        if self.phase == "grasp":
+            self.finger_pos = -0.0
+            # grasp
+            self.franka.control_dofs_position(self.qpos[:-2], self.motors_dof)
+            self.franka.control_dofs_position(
+                np.array([finger_pos, finger_pos]), self.fingers_dof
+            )
+
+        elif self.phase == "lift":
+            self.qpos = self.franka.inverse_kinematics(
+                link=self.end_effector,
+                pos=np.array([0.65, 0.0, 0.3]),
+                quat=np.array([0, 1, 0, 0]),
+            )
+            self.franka.control_dofs_position(self.qpos[:-2], self.motors_dof)
+            self.franka.control_dofs_position(
+                np.array([finger_pos, finger_pos]), self.fingers_dof
+            )
+
+    def run(self) -> None:
+        while self.phase != "end":
+            self.observe()
+            self.act(self.step_number)
+            self.scene.step()
+            self.step_number += 1
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-v", "--vis", action="store_true", default=True)
+    args = parser.parse_args()
+
+    ########################## init ##########################
+    gs.init(backend=gs.gpu, precision="32")
+    ########################## create a scene ##########################
+    scene = gs.Scene(
+        viewer_options=gs.options.ViewerOptions(
+            camera_pos=(3, -1, 1.5),
+            camera_lookat=(0.0, 0.0, 0.5),
+            camera_fov=30,
+            res=(960, 640),
+            max_FPS=60,
+        ),
+        sim_options=gs.options.SimOptions(
+            dt=0.01,
+        ),
+        rigid_options=gs.options.RigidOptions(
+            box_box_detection=True,
+        ),
+        show_viewer=args.vis,
+    )
+    env = Env(scene, None)
+    env.run()
+
+
+if __name__ == "__main__":
+    main()
