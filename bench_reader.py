@@ -34,7 +34,9 @@ from numpy.typing import NDArray
 from rerun.components import PoseRotationQuat, PoseTranslation3D
 from tqdm import tqdm
 
-EPISODE_DURATION_S = 5
+from config import OUTPUT_DIR
+
+EPISODE_DURATION_S = 60
 VIDEO_FRAME_RATE_HZ = 30
 VIDEO_FRAME_SIZE = (1280, 720)
 N_CAMERA_VIEWS = 1
@@ -246,15 +248,16 @@ def benchmark_rerun_reader(rerun_path: Path) -> None:
 
 
 def main():
+    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     # Generate dataset once
     dataset = make_dataset()
 
     # Write to both formats
-    write_mcap_dataset(dataset, Path("dataset.mcap"))
-    benchmark_mcap_reader(Path("dataset.mcap"))
+    write_mcap_dataset(dataset, OUTPUT_DIR / "dataset.mcap")
+    benchmark_mcap_reader(OUTPUT_DIR / "dataset.mcap")
 
-    write_rerun_dataset(dataset, Path("dataset.rrd"))
-    benchmark_rerun_reader(Path("dataset.rrd"))
+    write_rerun_dataset(dataset, OUTPUT_DIR / "dataset.rrd")
+    benchmark_rerun_reader(OUTPUT_DIR / "dataset.rrd")
 
 
 if __name__ == "__main__":
