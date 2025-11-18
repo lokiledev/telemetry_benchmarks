@@ -5,8 +5,12 @@ description = "A project to benchmark the performance of the most popular roboti
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
+    "av>=16.0.1",
     "foxglove-sdk>=0.15.3",
     "loguru>=0.7.3",
+    "mcap>=1.3.0",
     "numpy>=2.2.6",
+    "pandas>=2.3.3",
     "rerun-sdk>=0.27.0",
+    "tqdm>=4.67.1",
 ]
