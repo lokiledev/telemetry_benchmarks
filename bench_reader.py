@@ -11,14 +11,11 @@ Training models requires random access reads to the data.
 import time
 from dataclasses import dataclass
 from datetime import timedelta
-from fractions import Fraction
 from pathlib import Path
 
-import av
 import foxglove
 import numpy as np
 import rerun as rr
-from av.video.codeccontext import VideoCodecContext
 from foxglove.channels import CompressedVideoChannel, PoseInFrameChannel
 from foxglove.schemas import (
     CompressedVideo,
@@ -34,7 +31,14 @@ from numpy.typing import NDArray
 from rerun.components import PoseRotationQuat, PoseTranslation3D
 from tqdm import tqdm
 
-from config import OUTPUT_DIR
+from telemetry_benchmarks.sim.config import OUTPUT_DIR
+from telemetry_benchmarks.sim.video_encoder import (
+    Context,
+    TimestampedPacket,
+    encode_video_frame,
+    flush_codec,
+    make_codec,
+)
 
 EPISODE_DURATION_S = 60
 VIDEO_FRAME_RATE_HZ = 30
@@ -54,30 +58,6 @@ def make_video_frame() -> NDArray[np.uint8]:
     return frame
 
 
-def make_codec(
-    width: int, height: int, fps: int = VIDEO_FRAME_RATE_HZ
-) -> VideoCodecContext:
-    codec = av.Codec("libsvtav1", "w")
-    codec_ctx = codec.create(kind="video")
-    codec_ctx.width = width
-    codec_ctx.height = height
-    codec_ctx.max_b_frames = 0
-    codec_ctx.pix_fmt = "yuv420p"
-    codec_ctx.framerate = Fraction(fps, 1)
-    codec_ctx.time_base = Fraction(1, fps)
-    codec_ctx.options = {"g": "30"}
-    return codec_ctx
-
-
-@dataclass
-class Context:
-    codec: VideoCodecContext
-    timestamps: list[float]
-
-
-TimestampedPacket = tuple[bytes, float]
-
-
 @dataclass
 class Dataset:
     """In-memory dataset structure."""
@@ -86,28 +66,6 @@ class Dataset:
     positions: NDArray[np.float64]  # Shape (N, 3) for x, y, z
     orientations: NDArray[np.float64]  # Shape (N, 4) for quaternion x, y, z, w
     video_packets: list[TimestampedPacket]  # List of (bytes, float) tuples
-
-
-def encode_video_frame(
-    context: Context, frame: NDArray[np.uint8], timestamp: float
-) -> TimestampedPacket | None:
-    av_frame = av.VideoFrame.from_ndarray(frame, format="rgb24")
-    context.timestamps.append(timestamp)
-    packets = context.codec.encode(av_frame)
-    if len(packets) == 1:
-        ts = context.timestamps.pop(0)
-        msg = (bytes(packets[0]), ts)
-        return msg
-    return None
-
-
-def flush_codec(context: Context) -> list[TimestampedPacket]:
-    packets = context.codec.encode(None)
-    msgs = []
-    for packet in packets:
-        ts = context.timestamps.pop(0)
-        msgs.append((bytes(packet), ts))
-    return msgs
 
 
 def make_dataset() -> Dataset:
@@ -240,7 +198,7 @@ def benchmark_rerun_reader(rerun_path: Path) -> None:
     recording = rr.dataframe.load_recording(rerun_path)
     view = recording.view(index="robot_time", contents="/**")
     df = view.select().read_pandas()
-    for row in df.itertuples():
+    for _ in df.itertuples():
         pass
     elapsed = timedelta(seconds=time.perf_counter() - start_time)
     logger.info(f"Rerun reader, sequential read, no decoding: {elapsed}")

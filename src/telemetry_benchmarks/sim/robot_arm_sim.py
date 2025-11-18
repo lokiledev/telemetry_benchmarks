@@ -3,13 +3,15 @@ from typing import Literal
 import genesis as gs
 import numpy as np
 
-from telemetry_benchmarks.sim.datalogger import Logger, NamedTransform, NullLogger
+from telemetry_benchmarks.sim.config import CAMERA_FPS, CAMERA_RESOLUTION, OUTPUT_DIR
+from telemetry_benchmarks.sim.datalogger import DataLogger, NamedTransform, NullLogger
+from telemetry_benchmarks.sim.mcap_datalogger import MCAPLogger
 
 GraspState = Literal["idle", "grasp", "lift", "end"]
 
 
 class Env:
-    def __init__(self, logger: Logger | None = None):
+    def __init__(self, logger: DataLogger | None = None):
         self.logger = logger or NullLogger()
         self.last_camera_timestamp = 0
         self.step_number = 0
@@ -41,7 +43,7 @@ class Env:
             gs.morphs.Box(size=(0.04, 0.04, 0.04), pos=(0.65, 0.0, 0.02)),
         )
         self.camera = self.scene.add_camera(
-            res=(640, 480), pos=(3, -1, 1.5), lookat=(0.0, 0.0, 0.5), fov=30
+            res=CAMERA_RESOLUTION, pos=(3, -1, 1.5), lookat=(0.0, 0.0, 0.5), fov=30
         )
 
         self.scene.build()
@@ -74,19 +76,21 @@ class Env:
             return "end"
 
     def observe(self, timestamp: float) -> None:
-        if timestamp - self.last_camera_timestamp >= 1.0 / 30:
+        if timestamp == 0 or (
+            timestamp - self.last_camera_timestamp > 1.0 / CAMERA_FPS
+        ):
             color, _, _, _ = self.camera.render()
-            self.logger.log_video(color)
+            self.logger.log_video(color, timestamp)
             self.last_camera_timestamp = timestamp
         qpos = (
             self.franka.get_qpos(np.concatenate([self.motors_dof, self.fingers_dof]))
             .cpu()
             .numpy()
         )
-        self.logger.log_joint_states(qpos)
+        self.logger.log_joint_states(qpos, timestamp)
 
         transforms = self.get_link_transforms()
-        self.logger.log_transforms(transforms)
+        self.logger.log_transforms(transforms, timestamp)
 
     def get_link_transforms(self) -> list[NamedTransform]:
         geoms = self.franka.geoms
@@ -133,12 +137,13 @@ class Env:
             self.act(timestamp)
             self.scene.step()
             self.step_number += 1
+        self.logger.finish()
 
 
 def main():
     ########################## init ##########################
     gs.init(backend=gs.cpu, precision="32")
-    env = Env()
+    env = Env(logger=MCAPLogger(OUTPUT_DIR / "robot_arm.mcap"))
     ############## run the environment #####################
     env.run()
 

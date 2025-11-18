@@ -15,7 +15,7 @@ from loguru import logger
 from numpy.typing import NDArray
 from tqdm import tqdm
 
-from config import OUTPUT_DIR
+from telemetry_benchmarks.sim.config import OUTPUT_DIR
 
 SAMPLING_RATE_HZ = 1000
 DURATION_S = 3600

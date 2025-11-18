@@ -12,36 +12,47 @@ class NamedTransform:
     mat: NDArray[np.float64]  # 4x4 transform matrix
 
 
-class Logger(ABC):
+class DataLogger(ABC):
     def __init__(self):
         pass
 
     @abstractmethod
-    def log_joint_states(self, qpos: np.ndarray) -> None:
+    def log_joint_states(self, qpos: np.ndarray, timestamp: float) -> None:
         pass
 
     @abstractmethod
-    def log_video(self, video: np.ndarray) -> None:
+    def log_video(self, video: np.ndarray, timestamp: float) -> None:
         pass
 
     @abstractmethod
-    def log_end_effector_pose(self, pose: np.ndarray) -> None:
+    def log_end_effector_pose(self, pose: np.ndarray, timestamp: float) -> None:
         pass
 
     @abstractmethod
-    def log_transforms(self, transforms: list[NamedTransform]) -> None:
+    def log_transforms(
+        self, transforms: list[NamedTransform], timestamp: float
+    ) -> None:
+        pass
+
+    @abstractmethod
+    def finish(self) -> None:
         pass
 
 
-class NullLogger(Logger):
-    def log_joint_states(self, qpos: np.ndarray) -> None:
+class NullLogger(DataLogger):
+    def log_joint_states(self, qpos: np.ndarray, timestamp: float) -> None:
         pass
 
-    def log_video(self, video: np.ndarray) -> None:
+    def log_video(self, video: np.ndarray, timestamp: float) -> None:
         pass
 
-    def log_end_effector_pose(self, pose: np.ndarray) -> None:
+    def log_end_effector_pose(self, pose: np.ndarray, timestamp: float) -> None:
         pass
 
-    def log_transforms(self, transforms: list[NamedTransform]) -> None:
+    def log_transforms(
+        self, transforms: list[NamedTransform], timestamp: float
+    ) -> None:
+        pass
+
+    def finish(self) -> None:
         pass
