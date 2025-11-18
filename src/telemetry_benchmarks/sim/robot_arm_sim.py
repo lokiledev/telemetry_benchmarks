@@ -3,7 +3,7 @@ from typing import Literal
 import genesis as gs
 import numpy as np
 
-from telemetry_benchmarks.sim.datalogger import Logger, NullLogger
+from telemetry_benchmarks.sim.datalogger import Logger, NamedTransform, NullLogger
 
 GraspState = Literal["idle", "grasp", "lift", "end"]
 
@@ -85,6 +85,24 @@ class Env:
         )
         self.logger.log_joint_states(qpos)
 
+        transforms = self.get_link_transforms()
+        self.logger.log_transforms(transforms)
+
+    def get_link_transforms(self) -> list[NamedTransform]:
+        geoms = self.franka.geoms
+        geoms_T = self.scene.rigid_solver._geoms_render_T
+        transforms = []
+        seen = set()
+        for geom in geoms:
+            tf = geoms_T[geom.idx, 0]
+            link_name = geom.link.name
+            if link_name in seen:
+                continue
+            seen.add(link_name)
+            named_tf = NamedTransform(parent="world", child=link_name, mat=tf)
+            transforms.append(named_tf)
+        return transforms
+
     def act(self, timestamp: float) -> None:
         finger_pos = -0.0
         self.phase = self.state_from_timestamp(timestamp)
@@ -97,7 +115,6 @@ class Env:
             self.franka.control_dofs_position(
                 np.array([finger_pos, finger_pos]), self.fingers_dof
             )
-
         elif self.phase == "lift":
             self.qpos = self.franka.inverse_kinematics(
                 link=self.end_effector,
