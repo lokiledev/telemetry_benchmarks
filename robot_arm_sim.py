@@ -46,6 +46,7 @@ GraspState = Literal["idle", "grasp", "lift", "end"]
 class Env:
     def __init__(self, logger: Logger | None = None):
         self.logger = logger or NullLogger()
+        self.last_camera_timestamp = 0
         self.step_number = 0
         self.phase: GraspState = "idle"
         self.scene = gs.Scene(
@@ -57,7 +58,8 @@ class Env:
                 max_FPS=60,
             ),
             sim_options=gs.options.SimOptions(
-                dt=0.01,
+                dt=0.004,  # 250 Hz x4 = 1KHz
+                substeps=4,
             ),
             rigid_options=gs.options.RigidOptions(
                 box_box_detection=True,
@@ -74,13 +76,13 @@ class Env:
             gs.morphs.Box(size=(0.04, 0.04, 0.04), pos=(0.65, 0.0, 0.02)),
         )
         self.camera = self.scene.add_camera(
-            res=(960, 640), pos=(3, -1, 1.5), lookat=(0.0, 0.0, 0.5), fov=30
+            res=(640, 480), pos=(3, -1, 1.5), lookat=(0.0, 0.0, 0.5), fov=30
         )
 
         self.scene.build()
 
-        self.motors_dof = np.arange(7)
-        self.fingers_dof = np.arange(7, 9)
+        self.motors_dof = np.array(np.arange(7))
+        self.fingers_dof = np.array(np.arange(7, 9))
         self.qpos = np.array(
             [-1.0124, 1.5559, 1.3662, -1.6878, -1.5799, 1.7757, 1.4602, 0.04, 0.04]
         )
@@ -106,9 +108,17 @@ class Env:
         else:
             return "end"
 
-    def observe(self) -> None:
-        color, _, _, _ = self.camera.render()
-        self.logger.log_video(color)
+    def observe(self, timestamp: float) -> None:
+        if timestamp - self.last_camera_timestamp >= 1.0 / 30:
+            color, _, _, _ = self.camera.render()
+            self.logger.log_video(color)
+            self.last_camera_timestamp = timestamp
+        qpos = (
+            self.franka.get_qpos(np.concatenate([self.motors_dof, self.fingers_dof]))
+            .cpu()
+            .numpy()
+        )
+        self.logger.log_joint_states(qpos)
 
     def act(self, timestamp: float) -> None:
         finger_pos = -0.0
@@ -136,15 +146,16 @@ class Env:
 
     def run(self) -> None:
         while self.phase != "end":
-            self.observe()
-            self.act(self.step_number * self.scene.dt)
+            timestamp = self.step_number * self.scene.dt
+            self.observe(timestamp)
+            self.act(timestamp)
             self.scene.step()
             self.step_number += 1
 
 
 def main():
     ########################## init ##########################
-    gs.init(backend=gs.gpu, precision="32")
+    gs.init(backend=gs.cpu, precision="32")
     env = Env()
     ############## run the environment #####################
     env.run()
