@@ -1,3 +1,4 @@
+from pathlib import Path
 from typing import Literal
 
 import genesis as gs
@@ -8,6 +9,8 @@ from telemetry_benchmarks.sim.datalogger import DataLogger, NamedTransform, Null
 from telemetry_benchmarks.sim.mcap_datalogger import MCAPLogger
 
 GraspState = Literal["idle", "grasp", "lift", "end"]
+ASSET_DIR = Path(__file__).parent / "SO101"
+ROBOT_MJCF = ASSET_DIR / "so101_new_calib.xml"
 
 
 class Env:
@@ -36,8 +39,8 @@ class Env:
         self.plane = self.scene.add_entity(
             gs.morphs.Plane(),
         )
-        self.franka = self.scene.add_entity(
-            gs.morphs.MJCF(file="xml/franka_emika_panda/panda.xml"),
+        self.robot = self.scene.add_entity(
+            gs.morphs.MJCF(file=str(ROBOT_MJCF)),
         )
         self.cube = self.scene.add_entity(
             gs.morphs.Box(size=(0.04, 0.04, 0.04), pos=(0.65, 0.0, 0.02)),
@@ -45,25 +48,31 @@ class Env:
         self.camera = self.scene.add_camera(
             res=CAMERA_RESOLUTION, pos=(3, -1, 1.5), lookat=(0.0, 0.0, 0.5), fov=30
         )
-
         self.scene.build()
 
-        self.motors_dof = np.array(np.arange(7))
-        self.fingers_dof = np.array(np.arange(7, 9))
-        self.qpos = np.array(
-            [-1.0124, 1.5559, 1.3662, -1.6878, -1.5799, 1.7757, 1.4602, 0.04, 0.04]
+        self.motors_dof = np.array(np.arange(5))
+        self.gripper_dof = np.array([6])
+        self.robot.set_dofs_kp(
+            np.array([100.0] * 6),
+            dofs_idx_local=np.concatenate([self.motors_dof, self.gripper_dof]),
         )
-        self.franka.set_qpos(self.qpos)
+        self.robot.set_dofs_kv(
+            np.array([5] * 6),
+            dofs_idx_local=np.concatenate([self.motors_dof, self.gripper_dof]),
+        )
+        # self.qpos = np.array([-1.0124, 1.5559, 1.3662, -1.6878, -1.5799, 1.0])
+        self.qpos = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+        self.robot.set_qpos(self.qpos)
         self.scene.step()
 
-        self.end_effector = self.franka.get_link("hand")
-        self.qpos = self.franka.inverse_kinematics(
+        self.end_effector = self.robot.get_link("gripper")
+        self.qpos = self.robot.inverse_kinematics(
             link=self.end_effector,
             pos=np.array([0.65, 0.0, 0.135]),
             quat=np.array([0, 1, 0, 0]),
         )
-        self.franka.control_dofs_position(self.qpos[:-2], self.motors_dof)
-        self.finger_pos = 0.5
+        self.robot.control_dofs_position(self.qpos[:-1], self.motors_dof)
+        self.gripper_pos = 0.5
 
     def state_from_timestamp(self, timestamp: float) -> GraspState:
         if timestamp <= 0.1:
@@ -83,7 +92,7 @@ class Env:
             self.logger.log_video(color, timestamp)
             self.last_camera_timestamp = timestamp
         qpos = (
-            self.franka.get_qpos(np.concatenate([self.motors_dof, self.fingers_dof]))
+            self.robot.get_qpos(np.concatenate([self.motors_dof, self.gripper_dof]))
             .cpu()
             .numpy()
         )
@@ -93,7 +102,7 @@ class Env:
         self.logger.log_transforms(transforms, timestamp)
 
     def get_link_transforms(self) -> list[NamedTransform]:
-        geoms = self.franka.geoms
+        geoms = self.robot.geoms
         geoms_T = self.scene.rigid_solver._geoms_render_T
         transforms = []
         seen = set()
@@ -108,27 +117,23 @@ class Env:
         return transforms
 
     def act(self, timestamp: float) -> None:
-        finger_pos = -0.0
+        gripper_pos = -0.0
         self.phase = self.state_from_timestamp(timestamp)
         if self.phase == "idle":
             pass
         if self.phase == "grasp":
-            self.finger_pos = -0.0
+            self.gripper_pos = -0.0
             # grasp
-            self.franka.control_dofs_position(self.qpos[:-2], self.motors_dof)
-            self.franka.control_dofs_position(
-                np.array([finger_pos, finger_pos]), self.fingers_dof
-            )
+            self.robot.control_dofs_position(self.qpos[:-1], self.motors_dof)
+            self.robot.control_dofs_position(np.array([gripper_pos]), self.gripper_dof)
         elif self.phase == "lift":
-            self.qpos = self.franka.inverse_kinematics(
+            self.qpos = self.robot.inverse_kinematics(
                 link=self.end_effector,
                 pos=np.array([0.65, 0.0, 0.3]),
                 quat=np.array([0, 1, 0, 0]),
             )
-            self.franka.control_dofs_position(self.qpos[:-2], self.motors_dof)
-            self.franka.control_dofs_position(
-                np.array([finger_pos, finger_pos]), self.fingers_dof
-            )
+            self.robot.control_dofs_position(self.qpos[:-1], self.motors_dof)
+            self.robot.control_dofs_position(np.array([gripper_pos]), self.gripper_dof)
 
     def run(self) -> None:
         while self.phase != "end":
