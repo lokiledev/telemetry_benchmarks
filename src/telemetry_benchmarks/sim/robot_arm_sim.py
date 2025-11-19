@@ -14,8 +14,9 @@ ASSET_DIR = Path(__file__).parent / "SO101"
 ROBOT_URDF = ASSET_DIR / "so101_new_calib.urdf"
 
 CUBE_INITIAL_POSE = np.array([0.25, 0.0, 0.02])
-EEF_TARGET_POSE = CUBE_INITIAL_POSE + np.array([0.0, 0.0, 0.01])
-EEF_TARGET_QUAT = np.array([1, 0, 0, 0])  # wxyz
+EEF_TARGET_POSE = CUBE_INITIAL_POSE + np.array([-0.02, 0.0, -0.01])
+EEF_TARGET_RPY = np.array([0.0, 0.0, 0.0])
+EEF_TARGET_QUAT = np.array([0.0, 0.0, 1.0, 0.0])
 
 
 class Env:
@@ -32,9 +33,6 @@ class Env:
                 res=(960, 640),
                 max_FPS=60,
             ),
-            vis_options=gs.options.VisOptions(
-                show_link_frame=True,
-            ),
             sim_options=gs.options.SimOptions(
                 dt=0.004,  # 250 Hz x4 = 1KHz
                 substeps=4,
@@ -43,6 +41,7 @@ class Env:
                 box_box_detection=True,
             ),
             show_viewer=True,
+            show_FPS=False,
         )
         self.plane = self.scene.add_entity(
             gs.morphs.Plane(),
@@ -81,9 +80,8 @@ class Env:
             np.array([5] * len(self.dofs_idx)),
             dofs_idx_local=self.dofs_idx,
         )
-        self.qpos = np.array([0.0, 0.0, 0.0, 1.5708, 0.0, 1.5])
+        self.qpos = np.array([0.0, 0.0, 0.0, 1.57, 0.0, 1.5])
         self.robot.set_qpos(self.qpos)
-
         self.end_effector = self.robot.get_link("gripper_frame_link")
         cam_offset = np.array([0.0, 0.0, 0.1])
         rot_offset_mat = np.array(
@@ -153,12 +151,12 @@ class Env:
         if self.phase == "idle":
             pass
         if self.phase == "grasp":
-            self.gripper_pos = -0.05
+            self.gripper_pos = 0.02
             self.qpos[self.gripper_dof] = self.gripper_pos
             # grasp
             self.robot.control_dofs_position(self.qpos, self.dofs_idx)
         elif self.phase == "lift":
-            target_pose = EEF_TARGET_POSE + np.array([-0.1, 0.0, 0.2])
+            target_pose = EEF_TARGET_POSE + np.array([0.0, 0.0, 0.2])
             self.scene.draw_debug_sphere(
                 target_pose, radius=0.01, color=(0.0, 1.0, 0.0, 0.5)
             )
