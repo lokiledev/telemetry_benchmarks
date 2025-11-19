@@ -35,6 +35,7 @@ class Env:
                 res=(960, 640),
                 max_FPS=60,
             ),
+            vis_options=gs.options.VisOptions(show_link_frame=True, show_cameras=True),
             sim_options=gs.options.SimOptions(
                 dt=0.004,  # 250 Hz x4 = 1KHz
                 substeps=4,
@@ -56,8 +57,6 @@ class Env:
         )
         self.camera = self.scene.add_camera(
             res=CAMERA_RESOLUTION,
-            pos=(3, -1, 1.5),
-            lookat=CUBE_INITIAL_POSE,
             fov=87,  # RealSense D455 horizontal FOV
             GUI=True,
         )
@@ -88,6 +87,12 @@ class Env:
         self.end_effector = self.robot.get_link("gripper_frame_link")
         cam_offset = np.array([0.1, 0.0, 0.2])
         cam_offset_mat = np.eye(4)
+        # 90° rotation around Z axis
+        angle = np.pi / 2  # 90 degrees in radians
+        cam_offset_mat[0, 0] = np.cos(angle)
+        cam_offset_mat[0, 1] = -np.sin(angle)
+        cam_offset_mat[1, 0] = np.sin(angle)
+        cam_offset_mat[1, 1] = np.cos(angle)
         cam_offset_mat[:3, 3] = cam_offset
         gripper_base = self.robot.get_link("gripper_link")
         self.camera.attach(gripper_base, cam_offset_mat)
@@ -97,6 +102,8 @@ class Env:
             quat=EEF_TARGET_QUAT,
         )
         self.robot.control_dofs_position(self.qpos, self.dofs_idx)
+        self.scene.step()
+        self.camera.move_to_attach()
         self.scene.step()
 
     def state_from_timestamp(self, timestamp: float) -> GraspState:
@@ -131,7 +138,7 @@ class Env:
             named_tf = NamedTransform(parent="base_link", child=link.name, mat=tf)
             transforms.append(named_tf)
         cam_named_tf = NamedTransform(
-            parent="base_link", child="camera_link", mat=self.camera.transform
+            parent="base_link", child="camera_link", mat=self.camera.get_transform()
         )
         transforms.append(cam_named_tf)
         return transforms
