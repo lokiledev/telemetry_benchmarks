@@ -16,8 +16,7 @@ from foxglove.schemas import (
     Timestamp,
     Vector3,
 )
-from numpy.typing import NDArray
-from scipy.spatial.transform import Rotation
+from genesis.utils.geom import T_to_trans_quat
 
 from telemetry_benchmarks.sim.config import CAMERA_RESOLUTION
 from telemetry_benchmarks.sim.datalogger import DataLogger, NamedTransform
@@ -27,11 +26,6 @@ from telemetry_benchmarks.sim.video_encoder import (
     flush_codec,
     make_codec,
 )
-
-
-def rot_mat_to_quaternion(rot_mat: NDArray[np.float64]) -> Quaternion:
-    q = Rotation.from_matrix(rot_mat[:3, :3]).as_quat()
-    return Quaternion(x=q[0], y=q[1], z=q[2], w=q[3])
 
 
 class MCAPLogger(DataLogger):
@@ -89,18 +83,23 @@ class MCAPLogger(DataLogger):
     ) -> None:
         result = []
         for transform in transforms:
-            breakpoint
+            pos, q = T_to_trans_quat(transform.mat)
             result.append(
                 FrameTransform(
                     timestamp=Timestamp.from_epoch_secs(timestamp),
                     parent_frame_id=transform.parent,
                     child_frame_id=transform.child,
                     translation=Vector3(
-                        x=transform.mat[0, 3],
-                        y=transform.mat[1, 3],
-                        z=transform.mat[2, 3],
+                        x=pos[0],
+                        y=pos[1],
+                        z=pos[2],
                     ),
-                    rotation=rot_mat_to_quaternion(transform.mat),
+                    rotation=Quaternion(
+                        w=q[0],
+                        x=q[1],
+                        y=q[2],
+                        z=q[3],
+                    ),
                 )
             )
         self.frame_transforms_stream.log(
@@ -116,6 +115,7 @@ class MCAPLogger(DataLogger):
                     data=packet_data,
                     timestamp=Timestamp.from_epoch_secs(packet_timestamp),
                     format="av1",
+                    frame_id="camera_link",
                 ),
                 log_time=int(packet_timestamp * 1e9),
             )

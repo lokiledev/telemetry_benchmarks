@@ -3,8 +3,7 @@ from typing import Literal
 
 import genesis as gs
 import numpy as np
-from numpy.typing import NDArray
-from scipy.spatial.transform import Rotation
+from genesis.utils.geom import trans_quat_to_T
 
 from telemetry_benchmarks.sim.config import CAMERA_FPS, CAMERA_RESOLUTION, OUTPUT_DIR
 from telemetry_benchmarks.sim.datalogger import DataLogger, NamedTransform, NullLogger
@@ -12,25 +11,11 @@ from telemetry_benchmarks.sim.mcap_datalogger import MCAPLogger
 
 GraspState = Literal["idle", "grasp", "lift", "end"]
 ASSET_DIR = Path(__file__).parent / "SO101"
-ROBOT_MJCF = ASSET_DIR / "so101_new_calib.xml"
+ROBOT_URDF = ASSET_DIR / "so101_new_calib.urdf"
 
 CUBE_INITIAL_POSE = np.array([0.25, 0.0, 0.02])
 EEF_TARGET_POSE = CUBE_INITIAL_POSE + np.array([0.0, 0.0, 0.01])
 EEF_TARGET_QUAT = np.array([1, 0, 0, 0])  # wxyz
-
-
-def quat_to_rot_mat(quat: NDArray[np.float64]) -> NDArray[np.float64]:
-    return Rotation.from_quat(quat).as_matrix()
-
-
-def pose_to_transform(
-    translation: NDArray[np.float64], quaternion: NDArray[np.float64]
-) -> NDArray[np.float64]:
-    rot_mat = quat_to_rot_mat(quaternion)
-    transform = np.eye(4)
-    transform[:3, :3] = rot_mat
-    transform[:3, 3] = translation
-    return transform
 
 
 class Env:
@@ -47,6 +32,9 @@ class Env:
                 res=(960, 640),
                 max_FPS=60,
             ),
+            vis_options=gs.options.VisOptions(
+                show_link_frame=True,
+            ),
             sim_options=gs.options.SimOptions(
                 dt=0.004,  # 250 Hz x4 = 1KHz
                 substeps=4,
@@ -60,7 +48,7 @@ class Env:
             gs.morphs.Plane(),
         )
         self.robot = self.scene.add_entity(
-            gs.morphs.MJCF(file=str(ROBOT_MJCF)),
+            gs.morphs.URDF(file=str(ROBOT_URDF), merge_fixed_links=False, fixed=True),
         )
         self.cube = self.scene.add_entity(
             gs.morphs.Box(size=(0.03, 0.03, 0.03), pos=CUBE_INITIAL_POSE),
@@ -96,8 +84,8 @@ class Env:
         self.qpos = np.array([0.0, 0.0, 0.0, 1.5708, 0.0, 1.5])
         self.robot.set_qpos(self.qpos)
 
-        self.end_effector = self.robot.get_link("gripper")
-        cam_offset = np.array([0.1, 0.0, 0.1])
+        self.end_effector = self.robot.get_link("gripper_frame_link")
+        cam_offset = np.array([0.0, 0.0, 0.1])
         rot_offset_mat = np.array(
             [
                 0.9396926,
@@ -147,19 +135,12 @@ class Env:
         self.logger.log_joint_states(qpos, timestamp)
 
     def get_link_transforms(self) -> list[NamedTransform]:
-        geoms = self.robot.geoms
-        geoms_T = self.scene.rigid_solver._geoms_render_T
         transforms = []
-        seen = set()
-        for geom in geoms:
-            tf = geoms_T[geom.idx, 0]
-            link_name = geom.link.name
-            if link_name in seen:
+        for link in self.robot.links:
+            if link.name == "base_link":
                 continue
-            seen.add(link_name)
-            named_tf = NamedTransform(
-                parent="base_link", child=link_name + "_link", mat=tf
-            )
+            tf = trans_quat_to_T(link.get_pos(), link.get_quat())
+            named_tf = NamedTransform(parent="base_link", child=link.name, mat=tf)
             transforms.append(named_tf)
         cam_named_tf = NamedTransform(
             parent="base_link", child="camera_link", mat=self.camera.transform
