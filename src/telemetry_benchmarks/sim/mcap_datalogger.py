@@ -2,8 +2,13 @@ from pathlib import Path
 
 import foxglove
 import numpy as np
-from foxglove.channels import CompressedVideoChannel, FrameTransformsChannel
+from foxglove.channels import (
+    CameraCalibrationChannel,
+    CompressedVideoChannel,
+    FrameTransformsChannel,
+)
 from foxglove.schemas import (
+    CameraCalibration,
     CompressedVideo,
     FrameTransform,
     FrameTransforms,
@@ -38,6 +43,26 @@ class MCAPLogger(DataLogger):
         )
         self.video_stream = CompressedVideoChannel(topic="/video")
         self.frame_transforms_stream = FrameTransformsChannel(topic="/tf")
+        self.camera_calibration_stream = CameraCalibrationChannel(
+            topic="/camera_calibration"
+        )
+        # RealSense D455 intrinsic parameters for 640x480 resolution
+        # Scaled from typical 1280x720 values: fx=642, fy=641, cx=652.6, cy=360.3
+        fx, fy, cx, cy = 321, 427, 326, 240
+
+        calib = CameraCalibration(
+            timestamp=Timestamp.from_epoch_secs(0),
+            frame_id="camera_link",
+            width=CAMERA_RESOLUTION[0],
+            height=CAMERA_RESOLUTION[1],
+            distortion_model="plumb_bob",
+            D=[0, 0, 0, 0, 0],
+            K=[fx, 0, cx, 0, fy, cy, 0, 0, 1],
+            # P is a 3x4 projection matrix (row-major): [fx, 0, cx, Tx, 0, fy, cy, Ty, 0, 0, 1, 0]
+            # For monocular cameras: Tx = Ty = 0
+            P=[fx, 0, cx, 0, 0, fy, cy, 0, 0, 0, 1, 0],
+        )
+        self.camera_calibration_stream.log(calib, log_time=0)
 
     def log_joint_states(self, qpos: np.ndarray, timestamp: float) -> None:
         pass
@@ -51,6 +76,7 @@ class MCAPLogger(DataLogger):
                     data=packet_data,
                     timestamp=Timestamp.from_epoch_secs(packet_timestamp),
                     format="av1",
+                    frame_id="camera_link",
                 ),
                 log_time=int(packet_timestamp * 1e9),
             )

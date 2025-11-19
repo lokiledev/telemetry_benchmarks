@@ -43,7 +43,7 @@ class Env:
             viewer_options=gs.options.ViewerOptions(
                 camera_pos=(3, -1, 1.5),
                 camera_lookat=(0.0, 0.0, 0.25),
-                camera_fov=30,
+                camera_fov=30,  # RealSense D455 horizontal FOV
                 res=(960, 640),
                 max_FPS=60,
             ),
@@ -69,8 +69,7 @@ class Env:
             res=CAMERA_RESOLUTION,
             pos=(3, -1, 1.5),
             lookat=(0.0, 0.0, 0.2),
-            fov=30,
-            GUI=True,
+            fov=87,  # RealSense D455 horizontal FOV
         )
 
         self.scene.build()
@@ -158,8 +157,14 @@ class Env:
             if link_name in seen:
                 continue
             seen.add(link_name)
-            named_tf = NamedTransform(parent="world", child=link_name, mat=tf)
+            named_tf = NamedTransform(
+                parent="base_link", child=link_name + "_link", mat=tf
+            )
             transforms.append(named_tf)
+        cam_named_tf = NamedTransform(
+            parent="base_link", child="camera_link", mat=self.camera.transform
+        )
+        transforms.append(cam_named_tf)
         return transforms
 
     def act(self, timestamp: float) -> None:
