@@ -116,6 +116,16 @@ telemetry_benchmarks/
 
 ## Viewer tests
 
+* To open the files with foxglove:
+```sh
+foxglove-studio output/robot_arm.mcap
+```
+
+* To open the files with rerun:
+```sh
+rerun output/robot_arm.rrd
+```
+
 TODO[loik]: share viewer layouts to simplify replay
 
 ## Results
