@@ -7,7 +7,7 @@ from genesis.utils.geom import trans_quat_to_T
 
 from telemetry_benchmarks.sim.config import CAMERA_FPS, CAMERA_RESOLUTION, OUTPUT_DIR
 from telemetry_benchmarks.sim.datalogger import DataLogger, NamedTransform, NullLogger
-from telemetry_benchmarks.sim.mcap_datalogger import MCAPLogger
+from telemetry_benchmarks.sim.rerun_datalogger import RerunLogger
 
 GraspState = Literal["idle", "grasp", "lift", "end"]
 ASSET_DIR = Path(__file__).parent / "SO101"
@@ -181,7 +181,7 @@ class Env:
 def main():
     ########################## init ##########################
     gs.init(backend=gs.cpu, precision="32")
-    env = Env(logger=MCAPLogger(OUTPUT_DIR / "robot_arm.mcap"))
+    env = Env(logger=RerunLogger(OUTPUT_DIR / "robot_arm.rrd", ROBOT_URDF))
     ############## run the environment #####################
     env.run()
 
