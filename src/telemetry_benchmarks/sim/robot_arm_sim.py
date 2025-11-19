@@ -1,12 +1,14 @@
 from pathlib import Path
 from typing import Literal
 
+import cyclopts
 import genesis as gs
 import numpy as np
 from genesis.utils.geom import trans_quat_to_T
 
 from telemetry_benchmarks.sim.config import CAMERA_FPS, CAMERA_RESOLUTION, OUTPUT_DIR
 from telemetry_benchmarks.sim.datalogger import DataLogger, NamedTransform, NullLogger
+from telemetry_benchmarks.sim.mcap_datalogger import MCAPLogger
 from telemetry_benchmarks.sim.rerun_datalogger import RerunLogger
 
 GraspState = Literal["idle", "grasp", "lift", "end"]
@@ -178,13 +180,18 @@ class Env:
         self.logger.finish()
 
 
-def main():
+def main(logger_type: Literal["mcap", "rerun"] = "mcap"):
     ########################## init ##########################
+    match logger_type:
+        case "mcap":
+            data_logger = MCAPLogger(OUTPUT_DIR / "robot_arm.mcap")
+        case "rerun":
+            data_logger = RerunLogger(OUTPUT_DIR / "robot_arm.rrd", ROBOT_URDF)
     gs.init(backend=gs.cpu, precision="32")
-    env = Env(logger=RerunLogger(OUTPUT_DIR / "robot_arm.rrd", ROBOT_URDF))
+    env = Env(logger=data_logger)
     ############## run the environment #####################
     env.run()
 
 
 if __name__ == "__main__":
-    main()
+    cyclopts.run(main)
