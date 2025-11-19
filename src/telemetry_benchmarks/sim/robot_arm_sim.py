@@ -47,10 +47,6 @@ class Env:
                 res=(960, 640),
                 max_FPS=60,
             ),
-            vis_options=gs.options.VisOptions(
-                show_link_frame=True,
-                link_frame_size=0.1,
-            ),
             sim_options=gs.options.SimOptions(
                 dt=0.004,  # 250 Hz x4 = 1KHz
                 substeps=4,
@@ -70,7 +66,11 @@ class Env:
             gs.morphs.Box(size=(0.03, 0.03, 0.03), pos=CUBE_INITIAL_POSE),
         )
         self.camera = self.scene.add_camera(
-            res=CAMERA_RESOLUTION, pos=(3, -1, 1.5), lookat=(0.0, 0.0, 0.2), fov=30
+            res=CAMERA_RESOLUTION,
+            pos=(3, -1, 1.5),
+            lookat=(0.0, 0.0, 0.2),
+            fov=30,
+            GUI=True,
         )
 
         self.scene.build()
@@ -98,6 +98,24 @@ class Env:
         self.robot.set_qpos(self.qpos)
 
         self.end_effector = self.robot.get_link("gripper")
+        cam_offset = np.array([0.1, 0.0, 0.1])
+        rot_offset_mat = np.array(
+            [
+                0.9396926,
+                0.0000000,
+                0.3420202,
+                0.0000000,
+                1.0000000,
+                0.0000000,
+                -0.3420202,
+                0.0000000,
+                0.9396926,
+            ]
+        ).reshape(3, 3)
+        cam_offset_mat = np.eye(4)
+        cam_offset_mat[:3, :3] = rot_offset_mat
+        cam_offset_mat[:3, 3] = cam_offset
+        self.camera.attach(self.end_effector, cam_offset_mat)
         self.qpos = self.robot.inverse_kinematics(
             link=self.end_effector,
             pos=EEF_TARGET_POSE,
@@ -117,17 +135,17 @@ class Env:
             return "end"
 
     def observe(self, timestamp: float) -> None:
+        self.camera.move_to_attach()
         if timestamp == 0 or (
             timestamp - self.last_camera_timestamp > 1.0 / CAMERA_FPS
         ):
             color, _, _, _ = self.camera.render()
             self.logger.log_video(color, timestamp)
             self.last_camera_timestamp = timestamp
+            transforms = self.get_link_transforms()
+            self.logger.log_transforms(transforms, timestamp)
         qpos = self.robot.get_qpos(self.dofs_idx).cpu().numpy()
         self.logger.log_joint_states(qpos, timestamp)
-
-        transforms = self.get_link_transforms()
-        self.logger.log_transforms(transforms, timestamp)
 
     def get_link_transforms(self) -> list[NamedTransform]:
         geoms = self.robot.geoms
