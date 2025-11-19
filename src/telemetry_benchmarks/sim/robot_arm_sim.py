@@ -57,8 +57,9 @@ class Env:
         self.camera = self.scene.add_camera(
             res=CAMERA_RESOLUTION,
             pos=(3, -1, 1.5),
-            lookat=(0.0, 0.0, 0.2),
+            lookat=CUBE_INITIAL_POSE,
             fov=87,  # RealSense D455 horizontal FOV
+            GUI=True,
         )
 
         self.scene.build()
@@ -85,24 +86,11 @@ class Env:
         self.qpos = np.array([0.0, 0.0, 0.0, 1.57, 0.0, 1.5])
         self.robot.set_qpos(self.qpos)
         self.end_effector = self.robot.get_link("gripper_frame_link")
-        cam_offset = np.array([0.0, 0.0, 0.1])
-        rot_offset_mat = np.array(
-            [
-                0.9396926,
-                0.0000000,
-                0.3420202,
-                0.0000000,
-                1.0000000,
-                0.0000000,
-                -0.3420202,
-                0.0000000,
-                0.9396926,
-            ]
-        ).reshape(3, 3)
+        cam_offset = np.array([0.1, 0.0, 0.2])
         cam_offset_mat = np.eye(4)
-        cam_offset_mat[:3, :3] = rot_offset_mat
         cam_offset_mat[:3, 3] = cam_offset
-        self.camera.attach(self.end_effector, cam_offset_mat)
+        gripper_base = self.robot.get_link("gripper_link")
+        self.camera.attach(gripper_base, cam_offset_mat)
         self.qpos = self.robot.inverse_kinematics(
             link=self.end_effector,
             pos=EEF_TARGET_POSE,
