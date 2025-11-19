@@ -3,6 +3,8 @@ from typing import Literal
 
 import genesis as gs
 import numpy as np
+from numpy.typing import NDArray
+from scipy.spatial.transform import Rotation
 
 from telemetry_benchmarks.sim.config import CAMERA_FPS, CAMERA_RESOLUTION, OUTPUT_DIR
 from telemetry_benchmarks.sim.datalogger import DataLogger, NamedTransform, NullLogger
@@ -11,6 +13,24 @@ from telemetry_benchmarks.sim.mcap_datalogger import MCAPLogger
 GraspState = Literal["idle", "grasp", "lift", "end"]
 ASSET_DIR = Path(__file__).parent / "SO101"
 ROBOT_MJCF = ASSET_DIR / "so101_new_calib.xml"
+
+CUBE_INITIAL_POSE = np.array([0.25, 0.0, 0.02])
+EEF_TARGET_POSE = CUBE_INITIAL_POSE + np.array([0.0, 0.0, 0.01])
+EEF_TARGET_QUAT = np.array([1, 0, 0, 0])  # wxyz
+
+
+def quat_to_rot_mat(quat: NDArray[np.float64]) -> NDArray[np.float64]:
+    return Rotation.from_quat(quat).as_matrix()
+
+
+def pose_to_transform(
+    translation: NDArray[np.float64], quaternion: NDArray[np.float64]
+) -> NDArray[np.float64]:
+    rot_mat = quat_to_rot_mat(quaternion)
+    transform = np.eye(4)
+    transform[:3, :3] = rot_mat
+    transform[:3, 3] = translation
+    return transform
 
 
 class Env:
@@ -22,10 +42,14 @@ class Env:
         self.scene = gs.Scene(
             viewer_options=gs.options.ViewerOptions(
                 camera_pos=(3, -1, 1.5),
-                camera_lookat=(0.0, 0.0, 0.5),
+                camera_lookat=(0.0, 0.0, 0.25),
                 camera_fov=30,
                 res=(960, 640),
                 max_FPS=60,
+            ),
+            vis_options=gs.options.VisOptions(
+                show_link_frame=True,
+                link_frame_size=0.1,
             ),
             sim_options=gs.options.SimOptions(
                 dt=0.004,  # 250 Hz x4 = 1KHz
@@ -43,36 +67,44 @@ class Env:
             gs.morphs.MJCF(file=str(ROBOT_MJCF)),
         )
         self.cube = self.scene.add_entity(
-            gs.morphs.Box(size=(0.04, 0.04, 0.04), pos=(0.65, 0.0, 0.02)),
+            gs.morphs.Box(size=(0.03, 0.03, 0.03), pos=CUBE_INITIAL_POSE),
         )
         self.camera = self.scene.add_camera(
-            res=CAMERA_RESOLUTION, pos=(3, -1, 1.5), lookat=(0.0, 0.0, 0.5), fov=30
+            res=CAMERA_RESOLUTION, pos=(3, -1, 1.5), lookat=(0.0, 0.0, 0.2), fov=30
         )
+
         self.scene.build()
 
-        self.motors_dof = np.array(np.arange(5))
-        self.gripper_dof = np.array([6])
+        joints = [
+            "shoulder_pan",
+            "shoulder_lift",
+            "elbow_flex",
+            "wrist_flex",
+            "wrist_roll",
+            "gripper",
+        ]
+        self.dofs_idx = [self.robot.get_joint(name).dof_idx_local for name in joints]
+        self.motors_dof = np.array(self.dofs_idx[:-1])
+        self.gripper_dof = np.array(self.dofs_idx[-1])
         self.robot.set_dofs_kp(
-            np.array([100.0] * 6),
-            dofs_idx_local=np.concatenate([self.motors_dof, self.gripper_dof]),
+            np.array([100.0] * len(self.dofs_idx)),
+            dofs_idx_local=self.dofs_idx,
         )
         self.robot.set_dofs_kv(
-            np.array([5] * 6),
-            dofs_idx_local=np.concatenate([self.motors_dof, self.gripper_dof]),
+            np.array([5] * len(self.dofs_idx)),
+            dofs_idx_local=self.dofs_idx,
         )
-        # self.qpos = np.array([-1.0124, 1.5559, 1.3662, -1.6878, -1.5799, 1.0])
-        self.qpos = np.array([0.0, 0.0, 0.0, 0.0, 0.0, 0.0])
+        self.qpos = np.array([0.0, 0.0, 0.0, 1.5708, 0.0, 1.5])
         self.robot.set_qpos(self.qpos)
-        self.scene.step()
 
         self.end_effector = self.robot.get_link("gripper")
         self.qpos = self.robot.inverse_kinematics(
             link=self.end_effector,
-            pos=np.array([0.65, 0.0, 0.135]),
-            quat=np.array([0, 1, 0, 0]),
+            pos=EEF_TARGET_POSE,
+            quat=EEF_TARGET_QUAT,
         )
-        self.robot.control_dofs_position(self.qpos[:-1], self.motors_dof)
-        self.gripper_pos = 0.5
+        self.robot.control_dofs_position(self.qpos, self.dofs_idx)
+        self.scene.step()
 
     def state_from_timestamp(self, timestamp: float) -> GraspState:
         if timestamp <= 0.1:
@@ -91,11 +123,7 @@ class Env:
             color, _, _, _ = self.camera.render()
             self.logger.log_video(color, timestamp)
             self.last_camera_timestamp = timestamp
-        qpos = (
-            self.robot.get_qpos(np.concatenate([self.motors_dof, self.gripper_dof]))
-            .cpu()
-            .numpy()
-        )
+        qpos = self.robot.get_qpos(self.dofs_idx).cpu().numpy()
         self.logger.log_joint_states(qpos, timestamp)
 
         transforms = self.get_link_transforms()
@@ -117,23 +145,26 @@ class Env:
         return transforms
 
     def act(self, timestamp: float) -> None:
-        gripper_pos = -0.0
         self.phase = self.state_from_timestamp(timestamp)
         if self.phase == "idle":
             pass
         if self.phase == "grasp":
-            self.gripper_pos = -0.0
+            self.gripper_pos = -0.05
+            self.qpos[self.gripper_dof] = self.gripper_pos
             # grasp
-            self.robot.control_dofs_position(self.qpos[:-1], self.motors_dof)
-            self.robot.control_dofs_position(np.array([gripper_pos]), self.gripper_dof)
+            self.robot.control_dofs_position(self.qpos, self.dofs_idx)
         elif self.phase == "lift":
+            target_pose = EEF_TARGET_POSE + np.array([-0.1, 0.0, 0.2])
+            self.scene.draw_debug_sphere(
+                target_pose, radius=0.01, color=(0.0, 1.0, 0.0, 0.5)
+            )
             self.qpos = self.robot.inverse_kinematics(
                 link=self.end_effector,
-                pos=np.array([0.65, 0.0, 0.3]),
-                quat=np.array([0, 1, 0, 0]),
+                pos=target_pose,
+                quat=EEF_TARGET_QUAT,
             )
-            self.robot.control_dofs_position(self.qpos[:-1], self.motors_dof)
-            self.robot.control_dofs_position(np.array([gripper_pos]), self.gripper_dof)
+            self.qpos[self.gripper_dof] = self.gripper_pos
+            self.robot.control_dofs_position(self.qpos, self.dofs_idx)
 
     def run(self) -> None:
         while self.phase != "end":
