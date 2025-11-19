@@ -1,0 +1,131 @@
+# Telemetry Benchmarks
+
+## Overview
+
+This project provides a systematic comparison between [Foxglove](https://foxglove.dev/) (MCAP format) and [Rerun](https://rerun.io/) (RRD format) for robotics telemetry data recording and playback. The benchmarks cover:
+
+- **SDK Performance**: Write and read performance of both SDKs
+- **File Storage**: Compression efficiency and file size comparisons
+- **Viewer Performance**: Playback and visualization capabilities
+
+## Features
+
+### Benchmark Suite
+
+The project includes several benchmark scripts:
+
+- **`bench_reader.py`**: Generates a representative fake dataset and benchmarks reading performance with video frames, poses, and random/sequential access patterns
+- **`bench_single_pointcloud.py`**: Evaluates point cloud recording and playback performance
+- **`bench_single_timeseries.py`**: Tests high-frequency time series data recording efficiency
+
+### Robot Simulation
+
+The project includes a self-contained simulation package (`src/telemetry_benchmarks/sim/`) based on [genesis-world](https://genesis-world.readthedocs.io/en/latest/#) featuring:
+
+- **Robot Arm Simulation**: A realistic robot arm simulation using the SO101 robot model
+- **Dual Format Recording**: Simultaneously records data in both MCAP (Foxglove) and RRD (Rerun) formats
+- **Realistic Data Generation**: Produces meaningful telemetry data including:
+  - Joint states
+  - End-effector poses
+  - Transform trees
+  - Video streams from simulated cameras
+
+This simulation serves as both a demo and a source of realistic benchmark data, ensuring that performance comparisons are based on representative robotics workloads.
+
+## Installation
+
+### Prerequisites
+
+- Python >= 3.10
+- [uv](https://github.com/astral-sh/uv) package manager
+
+### Setup
+
+1. **Create a virtual environment and install dependencies:**
+
+   ```bash
+   uv venv
+   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+   uv sync
+   ```
+
+2. **Special Installation for Rerun (AV1 Codec Support)**
+
+   The latest Rerun release doesn't include AV1 codec support yet. To enable AV1 encoding/decoding, install a pre-release build:
+
+   ```bash
+   uv pip install --pre --no-index -f https://build.rerun.io/commit/0c88e94/wheels --upgrade rerun-sdk
+   ```
+
+   > **Note**: This installs a pre-release build from a specific commit. Once AV1 support is available in the official release, this step can be skipped.
+
+## Usage
+
+### Running Benchmarks
+
+Run individual benchmark scripts:
+
+```bash
+# Benchmark reader performance with video and pose data
+python bench_reader.py
+
+# Benchmark point cloud recording
+python bench_single_pointcloud.py
+
+# Benchmark high-frequency time series data
+python bench_single_timeseries.py
+```
+
+### Running the Robot Simulation
+
+The simulation can be run with different logging backends:
+
+```bash
+# Run simulation with MCAP logging (Foxglove)
+python -m telemetry_benchmarks.sim.robot_arm_sim --logger mcap
+
+# Run simulation with Rerun logging
+python -m telemetry_benchmarks.sim.robot_arm_sim --logger rerun
+```
+
+### Output Files
+
+All generated files are saved to the `output/` directory:
+
+- `*.mcap` - Foxglove MCAP format files
+- `*.rrd` - Rerun format files
+
+## Project Structure
+
+```
+telemetry_benchmarks/
+├── bench_reader.py              # Main reader benchmark
+├── bench_single_pointcloud.py    # Point cloud benchmark
+├── bench_single_timeseries.py    # Time series benchmark
+├── src/
+│   └── telemetry_benchmarks/
+│       └── sim/                  # Simulation package
+│           ├── config.py          # Configuration
+│           ├── datalogger.py     # Abstract logger interface
+│           ├── mcap_datalogger.py # Foxglove MCAP logger
+│           ├── rerun_datalogger.py # Rerun logger
+│           ├── robot_arm_sim.py  # Robot simulation
+│           └── SO101/            # Robot model assets
+└── output/                       # Generated benchmark files
+```
+
+## Viewer tests
+
+TODO[loik]: share viewer layouts to simplify replay
+
+## Results
+
+TBD
+
+## Contributing
+
+This project is designed to provide objective performance comparisons. When adding new benchmarks, ensure:
+
+- Both formats are tested under identical conditions
+- Data generation is deterministic and reproducible
+- Results are clearly documented
