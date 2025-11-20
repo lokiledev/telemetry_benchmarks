@@ -139,3 +139,15 @@ This project is designed to provide objective performance comparisons. When addi
 - Both formats are tested under identical conditions
 - Data generation is deterministic and reproducible
 - Results are clearly documented
+
+# Updating protobuf messages
+
+If you need to create new protobuf messages for foxglove,
+you will need the buf tool to generate them.
+
+* install [buf](https://buf.build/docs/cli/installation/)
+* run `buf generate`
+This will generate new files in `src/telemetry_benchmarks/proto/pb2`
+
+* commit the generated files.
+

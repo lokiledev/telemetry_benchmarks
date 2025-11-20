@@ -13,11 +13,10 @@ class NamedTransform:
 
 
 class DataLogger(ABC):
-    def __init__(self):
-        pass
-
     @abstractmethod
-    def log_joint_states(self, qpos: np.ndarray, timestamp: float) -> None:
+    def log_joint_states(
+        self, qpos: np.ndarray, timestamp: float, joint_names: list[str]
+    ) -> None:
         pass
 
     @abstractmethod

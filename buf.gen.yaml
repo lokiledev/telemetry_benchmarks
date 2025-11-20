@@ -1,0 +1,11 @@
+version: v2
+clean: true
+plugins:
+  - remote: buf.build/protocolbuffers/python:v29.3
+    out: src/telemetry_benchmarks/sim/pb2/
+    include_imports: true
+  - remote: buf.build/protocolbuffers/pyi:v29.3
+    out: src/telemetry_benchmarks/sim/pb2/
+    include_imports: true
+inputs:
+  - directory: proto/

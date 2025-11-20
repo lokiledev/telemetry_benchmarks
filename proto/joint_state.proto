@@ -1,0 +1,7 @@
+package telemetry_benchmarks.sim;
+
+message JointState {
+    required double position = 1;
+    required double velocity = 2;
+    required double effort = 3;
+}
