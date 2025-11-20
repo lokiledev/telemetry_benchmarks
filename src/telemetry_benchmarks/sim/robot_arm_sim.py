@@ -35,7 +35,7 @@ class Env:
                 res=(960, 640),
                 max_FPS=60,
             ),
-            vis_options=gs.options.VisOptions(show_link_frame=True, show_cameras=True),
+            vis_options=gs.options.VisOptions(show_link_frame=False, show_cameras=True),
             sim_options=gs.options.SimOptions(
                 dt=0.004,  # 250 Hz x4 = 1KHz
                 substeps=4,
@@ -137,6 +137,10 @@ class Env:
             tf = trans_quat_to_T(link.get_pos(), link.get_quat())
             named_tf = NamedTransform(parent="base_link", child=link.name, mat=tf)
             transforms.append(named_tf)
+
+        # Log camera frame to allow visualization.
+        # Genesis uses OpenGL-style coordinates where camera looks along -Z
+        #  We might need to put a -1 sign in the vis projection dependending on convention.
         cam_named_tf = NamedTransform(
             parent="base_link", child="camera_link", mat=self.camera.get_transform()
         )

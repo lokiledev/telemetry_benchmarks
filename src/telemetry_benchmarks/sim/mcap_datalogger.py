@@ -50,7 +50,6 @@ class MCAPLogger(DataLogger):
             width=CAMERA_RESOLUTION[0],
             height=CAMERA_RESOLUTION[1],
             distortion_model="plumb_bob",
-            D=[0, 0, 0, 0, 0],
             K=[fx, 0, cx, 0, fy, cy, 0, 0, 1],
             # P is a 3x4 projection matrix (row-major): [fx, 0, cx, Tx, 0, fy, cy, Ty, 0, 0, 1, 0]
             # For monocular cameras: Tx = Ty = 0
