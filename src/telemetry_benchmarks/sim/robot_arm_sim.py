@@ -4,7 +4,7 @@ from typing import Literal
 import cyclopts
 import genesis as gs
 import numpy as np
-from genesis.utils.geom import trans_quat_to_T
+from urdfpy import URDF
 
 from telemetry_benchmarks.sim.config import CAMERA_FPS, CAMERA_RESOLUTION, OUTPUT_DIR
 from telemetry_benchmarks.sim.datalogger import DataLogger, NamedTransform, NullLogger
@@ -27,6 +27,7 @@ class Env:
         self.last_camera_timestamp = 0
         self.step_number = 0
         self.phase: GraspState = "idle"
+        self.urdf = URDF.from_xml_file(str(ROBOT_URDF))
         self.scene = gs.Scene(
             viewer_options=gs.options.ViewerOptions(
                 camera_pos=(3, -1, 1.5),
@@ -58,12 +59,10 @@ class Env:
         self.camera = self.scene.add_camera(
             res=CAMERA_RESOLUTION,
             fov=87,  # RealSense D455 horizontal FOV
-            GUI=True,
         )
 
         self.scene.build()
-
-        joints = [
+        self.joints = [
             "shoulder_pan",
             "shoulder_lift",
             "elbow_flex",
@@ -71,7 +70,9 @@ class Env:
             "wrist_roll",
             "gripper",
         ]
-        self.dofs_idx = [self.robot.get_joint(name).dof_idx_local for name in joints]
+        self.dofs_idx = [
+            self.robot.get_joint(name).dof_idx_local for name in self.joints
+        ]
         self.motors_dof = np.array(self.dofs_idx[:-1])
         self.gripper_dof = np.array(self.dofs_idx[-1])
         self.robot.set_dofs_kp(
@@ -131,11 +132,15 @@ class Env:
 
     def get_link_transforms(self) -> list[NamedTransform]:
         transforms = []
-        for link in self.robot.links:
+        qpos = self.robot.get_qpos(self.dofs_idx).cpu().numpy()
+        joint_cfg = {joint: qpos[i] for joint, i in zip(self.joints, self.dofs_idx)}
+        fk = self.urdf.forward_kinematics(joint_cfg)
+        for link, tf in fk.items():
             if link.name == "base_link":
                 continue
-            tf = trans_quat_to_T(link.get_pos(), link.get_quat())
-            named_tf = NamedTransform(parent="base_link", child=link.name, mat=tf)
+            named_tf = NamedTransform(
+                parent=self.urdf.base_link.name, child=link.name, mat=tf
+            )
             transforms.append(named_tf)
 
         # Log camera frame to allow visualization.

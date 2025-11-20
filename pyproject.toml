@@ -16,6 +16,7 @@ dependencies = [
     "rerun-sdk>=0.27.2",
     "torch>=2.9.1",
     "tqdm>=4.67.1",
+    "urdfpy>=0.0.1",
 ]
 
 [build-system]
