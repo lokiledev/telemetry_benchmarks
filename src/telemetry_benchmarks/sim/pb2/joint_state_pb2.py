@@ -24,7 +24,7 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11joint_state.proto\x12\x18telemetry_benchmarks.sim\"\\\n\nJointState\x12\x1a\n\x08position\x18\x01 \x02(\x01R\x08position\x12\x1a\n\x08velocity\x18\x02 \x02(\x01R\x08velocity\x12\x16\n\x06\x65\x66\x66ort\x18\x03 \x02(\x01R\x06\x65\x66\x66ort')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x11joint_state.proto\x12\x18telemetry_benchmarks.sim\"\\\n\nJointState\x12\x1a\n\x08position\x18\x01 \x02(\x02R\x08position\x12\x1a\n\x08velocity\x18\x02 \x02(\x02R\x08velocity\x12\x16\n\x06\x65\x66\x66ort\x18\x03 \x02(\x02R\x06\x65\x66\x66ort\"(\n\x0eJointPositions\x12\x16\n\x06\x61ngles\x18\x01 \x03(\x02R\x06\x61ngles')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
@@ -33,4 +33,6 @@ if not _descriptor._USE_C_DESCRIPTORS:
   DESCRIPTOR._loaded_options = None
   _globals['_JOINTSTATE']._serialized_start=47
   _globals['_JOINTSTATE']._serialized_end=139
+  _globals['_JOINTPOSITIONS']._serialized_start=141
+  _globals['_JOINTPOSITIONS']._serialized_end=181
 # @@protoc_insertion_point(module_scope)

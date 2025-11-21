@@ -1,0 +1,520 @@
+{
+  "configById": {
+    "Plot!1uwklcq": {
+      "paths": [
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[0]",
+          "enabled": true,
+          "color": "#4e98e2",
+          "id": "ba8e8de6-d315-41c6-a6ed-77eba6cf2944"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[1]",
+          "enabled": true,
+          "color": "#f5774d",
+          "id": "c1838dde-80aa-4878-9fc3-d359cc31726a"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[2]",
+          "enabled": true,
+          "color": "#f7df71",
+          "id": "563e6615-29d2-45c9-9ed5-01ba39815bad"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[3]",
+          "enabled": true,
+          "color": "#5cd6a9",
+          "id": "fcbaf344-c907-4d5e-928c-d09747d96f5a"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[4]",
+          "enabled": true,
+          "color": "#61cbff",
+          "id": "9c39432f-2f55-4496-83ef-5977613c18cf"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[5]",
+          "enabled": true,
+          "color": "#a395e2",
+          "id": "fd4b1d85-475d-4116-b3d1-09ec4ae1a242"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[6]",
+          "enabled": true,
+          "color": "#6ce544",
+          "id": "54111f07-5ed7-4130-9334-5ad3080f74d6"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[7]",
+          "enabled": true,
+          "color": "#4b44e5",
+          "id": "6f1b3350-4f85-4810-ab0f-cae65b900d6d"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[8]",
+          "enabled": true,
+          "color": "#e57a44",
+          "id": "dc45c274-d997-4a67-801b-26d8c527d8f6"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[9]",
+          "enabled": true,
+          "color": "#44e5a9",
+          "id": "be96cd89-c001-4cda-8090-aca61bd86267"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[10]",
+          "enabled": true,
+          "color": "#d844e5",
+          "id": "912f2991-1b89-4388-896c-0ea49c24100f"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[11]",
+          "enabled": true,
+          "color": "#c3e544",
+          "id": "f9fc7a70-5878-4a80-8ff9-045a22a8109c"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[12]",
+          "enabled": true,
+          "color": "#4494e5",
+          "id": "68ffc963-7117-4d64-94da-aadb726edf6f"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[13]",
+          "enabled": true,
+          "color": "#e54466",
+          "id": "630c2a04-4a37-4fd6-afcf-96dd4784de74"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[14]",
+          "enabled": true,
+          "color": "#44e552",
+          "id": "feb70f64-ec4d-4d1d-a6c0-4d86fb946f05"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[15]",
+          "enabled": true,
+          "color": "#8144e5",
+          "id": "258a9b3b-35f1-4361-a7be-a3653de49804"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[16]",
+          "enabled": true,
+          "color": "#e5b044",
+          "id": "0b25e30c-ee5a-415b-87c9-ff0396b4a238"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[17]",
+          "enabled": true,
+          "color": "#44e5df",
+          "id": "84a28e36-68ca-46de-970a-b4c4e3760f07"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[18]",
+          "enabled": true,
+          "color": "#e544bc",
+          "id": "de35a397-f872-47ab-a5b1-797d4b17d287"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[19]",
+          "enabled": true,
+          "color": "#8ee544",
+          "id": "11249141-1f13-420f-9dd9-ff8c28926569"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[20]",
+          "enabled": true,
+          "color": "#445fe5",
+          "id": "b884f5da-64bd-401e-a289-b837346fcc4d"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[21]",
+          "enabled": true,
+          "color": "#e55944",
+          "id": "e262e530-b948-4fd1-8de2-a0c4732cb5e9"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[22]",
+          "enabled": true,
+          "color": "#44e588",
+          "id": "cbbdff2c-0210-41bd-8947-fcd5c9d06c10"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[23]",
+          "enabled": true,
+          "color": "#b744e5",
+          "id": "329013fa-2661-4277-8922-ab0c5a12d468"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[24]",
+          "enabled": true,
+          "color": "#e4e544",
+          "id": "f11a6243-d586-41c9-8328-77ca6f9307a8"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[25]",
+          "enabled": true,
+          "color": "#44b6e5",
+          "id": "bd602284-d6bd-463f-8414-5a3836ec6a8f"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[26]",
+          "enabled": true,
+          "color": "#e54487",
+          "id": "6cd6dd8a-464a-4753-aa9f-e77f54c82853"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[27]",
+          "enabled": true,
+          "color": "#58e544",
+          "id": "0d2dbc9e-70f0-4d08-adce-256135503a98"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[28]",
+          "enabled": true,
+          "color": "#6044e5",
+          "id": "b461161a-ce8c-4201-97b3-148e7d1dc7c8"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[29]",
+          "enabled": true,
+          "color": "#e58f44",
+          "id": "1ae93246-2007-459c-b696-81630054581d"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[30]",
+          "enabled": true,
+          "color": "#44e5bd",
+          "id": "97c46ab0-505d-4d76-bd30-e4d19f31e068"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[31]",
+          "enabled": true,
+          "color": "#e544de",
+          "id": "4c778ee7-07e6-474a-9fe2-bcd577c2675b"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[32]",
+          "enabled": true,
+          "color": "#afe544",
+          "id": "e6a93514-6588-480e-b138-58dc56bcda8a"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[33]",
+          "enabled": true,
+          "color": "#4480e5",
+          "id": "dbd61632-b4d5-408c-bb96-1cd7b5507839"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[34]",
+          "enabled": true,
+          "color": "#e54451",
+          "id": "cfa81e1a-b4a7-4ac7-a1b8-d75bb8b95e41"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[35]",
+          "enabled": true,
+          "color": "#44e567",
+          "id": "54818dff-f14f-457e-a772-af6410c41c93"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[36]",
+          "enabled": true,
+          "color": "#9544e5",
+          "id": "0328be65-487f-43d9-93fa-97a176f4b899"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[37]",
+          "enabled": true,
+          "color": "#e5c444",
+          "id": "5351b3e7-fe81-48f4-9567-266cfdcd8b01"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[38]",
+          "enabled": true,
+          "color": "#44d7e5",
+          "id": "b2100a2e-ecb4-497a-ae17-9950b23f7539"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[39]",
+          "enabled": true,
+          "color": "#e544a8",
+          "id": "02c29cd1-4420-4751-be14-5b8d66ced077"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[40]",
+          "enabled": true,
+          "color": "#79e544",
+          "id": "483fcb2f-712e-447b-b8d5-e5b287508713"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[41]",
+          "enabled": true,
+          "color": "#444ae5",
+          "id": "d9a88671-2882-4de4-bf4d-5124293679c0"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[42]",
+          "enabled": true,
+          "color": "#e56d44",
+          "id": "ee882cb5-e4d5-490e-93b4-38dd5cb53c73"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[43]",
+          "enabled": true,
+          "color": "#44e59c",
+          "id": "e1ada7d9-0908-42e3-ab37-8f892f245bdc"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[44]",
+          "enabled": true,
+          "color": "#cb44e5",
+          "id": "ab5c9d16-bf18-4971-934c-4365ef558874"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[45]",
+          "enabled": true,
+          "color": "#d0e544",
+          "id": "7b68ec55-50c8-4746-bed6-ccb84c091616"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[46]",
+          "enabled": true,
+          "color": "#44a1e5",
+          "id": "cc4b92ae-cccb-4718-8979-63a039e1fd73"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[47]",
+          "enabled": true,
+          "color": "#e54472",
+          "id": "925022c9-f6bc-4181-b2cd-96b07f3c6a12"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[48]",
+          "enabled": true,
+          "color": "#44e545",
+          "id": "edf6973e-5800-4da6-9584-7c0480b91df0"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[49]",
+          "enabled": true,
+          "color": "#7444e5",
+          "id": "a70fd8da-95b4-4d95-934c-fdda8804eca0"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[50]",
+          "enabled": true,
+          "color": "#e5a344",
+          "id": "e367f817-d32a-4265-bdbc-f3d1d0c630f0"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[51]",
+          "enabled": true,
+          "color": "#44e5d2",
+          "id": "205a9a4e-0115-484e-abc5-d8bf5caf13d2"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[52]",
+          "enabled": true,
+          "color": "#e544c9",
+          "id": "e0a83354-115e-4880-b782-29c828df1e86"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[53]",
+          "enabled": true,
+          "color": "#9ae544",
+          "id": "1ed5a06c-3225-4544-ba09-843036628bd7"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[54]",
+          "enabled": true,
+          "color": "#446be5",
+          "id": "8a1a0ad6-b0f3-4e25-8b0f-a59802357d7b"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[55]",
+          "enabled": true,
+          "color": "#e54c44",
+          "id": "69714927-125b-4700-b500-8dbd9c84cb0f"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[56]",
+          "enabled": true,
+          "color": "#44e57b",
+          "id": "acb8476a-a08d-4fa2-bf5a-ef7c715698f2"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[57]",
+          "enabled": true,
+          "color": "#aa44e5",
+          "id": "1e6382d3-cc35-4120-8221-2d18ca5b6548"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[58]",
+          "enabled": true,
+          "color": "#e5d944",
+          "id": "773dc0d2-f405-4102-aa80-baa2872a2bcd"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[59]",
+          "enabled": true,
+          "color": "#44c2e5",
+          "id": "7b1f2770-b591-4993-9300-84ace11771f5"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[60]",
+          "enabled": true,
+          "color": "#e54493",
+          "id": "fc179730-1643-473e-a3be-787939fae6b7"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[61]",
+          "enabled": true,
+          "color": "#65e544",
+          "id": "33d0b91a-1a11-4c60-9219-2b692d8f1442"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[62]",
+          "enabled": true,
+          "color": "#5344e5",
+          "id": "a411f9c4-a010-463b-8cc8-56b8c4b6419e"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[63]",
+          "enabled": true,
+          "color": "#e58244",
+          "id": "bad51837-9298-4810-9d92-042714faca4d"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[64]",
+          "enabled": true,
+          "color": "#44e5b1",
+          "id": "64a14b19-a73d-4942-be61-60e4ecab3b1a"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[65]",
+          "enabled": true,
+          "color": "#e044e5",
+          "id": "b85cea19-d3cc-49fc-bb45-cfd136e85d72"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[66]",
+          "enabled": true,
+          "color": "#bbe544",
+          "id": "9dd44ffa-0333-4ea1-a8c9-f0242bda0f39"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[67]",
+          "enabled": true,
+          "color": "#448de5",
+          "id": "6a51c83a-e0ed-47c5-a45f-355fd022f059"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[68]",
+          "enabled": true,
+          "color": "#e5445e",
+          "id": "c8aea8b6-0e68-4324-903b-4dcc1c3a97ca"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[69]",
+          "enabled": true,
+          "color": "#44e55a",
+          "id": "49af505d-40f9-4358-8fe3-02399861e49c"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_angles.angles[70]",
+          "enabled": true,
+          "color": "#8944e5",
+          "id": "5480daff-8e0d-4620-9ccb-39c5bfcc075d"
+        }
+      ],
+      "showXAxisLabels": true,
+      "showYAxisLabels": true,
+      "showLegend": true,
+      "legendDisplay": "floating",
+      "showPlotValuesInLegend": false,
+      "isSynced": true,
+      "xAxisVal": "timestamp",
+      "sidebarDimension": 240,
+      "foxglovePanelTitle": "All time series"
+    }
+  },
+  "globalVariables": {},
+  "userNodes": {},
+  "playbackConfig": {
+    "speed": 1
+  },
+  "layout": "Plot!1uwklcq"
+}

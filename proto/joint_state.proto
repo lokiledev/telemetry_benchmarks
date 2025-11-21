@@ -1,7 +1,11 @@
 package telemetry_benchmarks.sim;
 
 message JointState {
-    required double position = 1;
-    required double velocity = 2;
-    required double effort = 3;
+    required float position = 1;
+    required float velocity = 2;
+    required float effort = 3;
+}
+
+message JointPositions {
+    repeated float angles = 1;
 }
