@@ -72,7 +72,7 @@ def benchmark_foxglove_many_timeseries(data: NDArray[np.float32]) -> BenchmarkRe
             data=msg.SerializeToString(),
             publish_time=int(timestamp * 1e9),
         )
-    elapsed = time.perf_counter() - start_time
+    elapsed = timedelta(seconds=time.perf_counter() - start_time)
     mcap_writer.finish()
     file.close()
 
@@ -83,7 +83,7 @@ def benchmark_foxglove_many_timeseries(data: NDArray[np.float32]) -> BenchmarkRe
     return BenchmarkResult(
         output_file=output_path,
         size_mb=mcap_size / 1024 / 1024,
-        duration=timedelta(seconds=elapsed),
+        duration=elapsed,
     )
 
 
