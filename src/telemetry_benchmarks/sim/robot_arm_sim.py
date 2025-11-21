@@ -31,14 +31,13 @@ class Env:
         self.urdf = URDF.from_xml_file(str(ROBOT_URDF))
         self.scene = gs.Scene(
             viewer_options=gs.options.ViewerOptions(
-                camera_pos=(3, -1, 1.5),
+                camera_pos=(2, -1, 1),
                 camera_lookat=(0.0, 0.0, 0.25),
-                camera_fov=30,  # RealSense D455 horizontal FOV
+                camera_fov=30,
                 res=(960, 640),
                 max_FPS=1 / self.dt,
                 run_in_thread=False,
             ),
-            vis_options=gs.options.VisOptions(show_link_frame=False, show_cameras=True),
             sim_options=gs.options.SimOptions(
                 dt=self.dt,
             ),
@@ -60,10 +59,10 @@ class Env:
         self.camera = self.scene.add_camera(
             res=CAMERA_RESOLUTION,
             fov=87,  # RealSense D455 horizontal FOV
-            GUI=True,
         )
 
         self.scene.build()
+
         self.joints = [
             "shoulder_pan",
             "shoulder_lift",
@@ -85,8 +84,6 @@ class Env:
             np.array([5] * len(self.dofs_idx)),
             dofs_idx_local=self.dofs_idx,
         )
-        self.qpos = np.array([0.0, 0.0, 0.0, 1.57, 0.0, 1.5])
-        self.robot.set_qpos(self.qpos)
         self.end_effector = self.robot.get_link("gripper_frame_link")
         cam_offset = np.array([0.1, 0.0, 0.2])
         cam_offset_mat = np.eye(4)
@@ -104,7 +101,7 @@ class Env:
             pos=EEF_TARGET_POSE,
             quat=EEF_TARGET_QUAT,
         )
-        self.robot.control_dofs_position(self.qpos, self.dofs_idx)
+        self.robot.set_qpos(self.qpos)
         self.camera.move_to_attach()
         self.scene.step()
 
@@ -164,9 +161,6 @@ class Env:
             self.robot.control_dofs_position(self.qpos, self.dofs_idx)
         elif self.phase == "lift":
             target_pose = EEF_TARGET_POSE + np.array([0.0, 0.0, 0.2])
-            self.scene.draw_debug_sphere(
-                target_pose, radius=0.01, color=(0.0, 1.0, 0.0, 0.5)
-            )
             self.qpos = self.robot.inverse_kinematics(
                 link=self.end_effector,
                 pos=target_pose,
