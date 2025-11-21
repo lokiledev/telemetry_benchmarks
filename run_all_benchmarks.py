@@ -25,14 +25,16 @@ def print_results_table(results):
     print("|-----------|--------|----------------|----------|")
 
     # Many timeseries
-    foxglove_many, rerun_many = results[0]
+    foxglove_many, rerun_many, rerun_column_many = results[0]
     print(
         f"| Many Timeseries | Foxglove MCAP | {foxglove_many.size_mb:.2f} | {format_duration(foxglove_many.duration)} |"
     )
     print(
         f"| Many Timeseries | Rerun RRD | {rerun_many.size_mb:.2f} | {format_duration(rerun_many.duration)} |"
     )
-
+    print(
+        f"| Many Timeseries | Rerun RRD (Column) | {rerun_column_many.size_mb:.2f} | {format_duration(rerun_column_many.duration)} |"
+    )
     # Single timeseries
     foxglove_single, rerun_single, rerun_column_single = results[1]
     print(

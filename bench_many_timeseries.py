@@ -106,12 +106,36 @@ def benchmark_rerun_many_timeseries(data: NDArray[np.float32]) -> BenchmarkResul
     )
 
 
+def benchmark_rerun_many_timeseries_column(
+    data: NDArray[np.float32],
+) -> BenchmarkResult:
+    rr.init("many_timeseries_column")
+    rr.save(OUTPUT_DIR / "many_timeseries_column.rrd")
+    start_time = time.perf_counter()
+    columns = rr.Scalars.columns(scalars=data[:, 1:])
+    rr.send_columns(
+        "joint_angles",
+        indexes=[rr.TimeColumn("joint_angles", duration=data[:, 0])],
+        columns=columns,
+    )
+    elapsed = timedelta(seconds=time.perf_counter() - start_time)
+    rr.init("many_timeseries_column")  # force flush
+    rrd_size = (OUTPUT_DIR / "many_timeseries_column.rrd").stat().st_size
+    logger.info(f"Rerun size: {rrd_size / 1024 / 1024:.2f} MB, write time: {elapsed}")
+    return BenchmarkResult(
+        output_file=OUTPUT_DIR / "many_timeseries_column.rrd",
+        size_mb=rrd_size / 1024 / 1024,
+        duration=elapsed,
+    )
+
+
 def run_benchmark_many_timeseries() -> tuple[BenchmarkResult, BenchmarkResult]:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     data = make_data()
     foxglove_result = benchmark_foxglove_many_timeseries(data)
     rerun_result = benchmark_rerun_many_timeseries(data)
-    return foxglove_result, rerun_result
+    rerun_column_result = benchmark_rerun_many_timeseries_column(data)
+    return foxglove_result, rerun_result, rerun_column_result
 
 
 if __name__ == "__main__":
