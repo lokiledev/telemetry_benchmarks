@@ -28,7 +28,7 @@ The project includes a self-contained simulation package (`src/telemetry_benchma
   - Joint states
   - End-effector poses
   - Transform trees
-  - Video streams from simulated cameras
+  - Video stream from simulated camera
 
 This simulation serves as both a demo and a source of realistic benchmark data, ensuring that performance comparisons are based on representative robotics workloads.
 
