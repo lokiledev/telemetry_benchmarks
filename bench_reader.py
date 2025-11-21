@@ -27,11 +27,12 @@ from foxglove.schemas import (
 )
 from loguru import logger
 from mcap.reader import make_reader
+from mcap_protobuf.decoder import DecoderFactory
 from numpy.typing import NDArray
 from rerun.components import PoseRotationQuat, PoseTranslation3D
 from tqdm import tqdm
 
-from telemetry_benchmarks.sim.config import OUTPUT_DIR
+from telemetry_benchmarks.sim.config import OUTPUT_DIR, BenchmarkResult
 from telemetry_benchmarks.sim.video_encoder import (
     Context,
     TimestampedPacket,
@@ -183,17 +184,22 @@ def write_rerun_dataset(dataset: Dataset, output_path: Path) -> None:
         rr.log("video", rr.VideoStream.from_fields(sample=packet_data))
 
 
-def benchmark_mcap_reader(mcap_path: Path) -> None:
+def benchmark_mcap_reader(mcap_path: Path) -> BenchmarkResult:
     start_time = time.perf_counter()
     with open(mcap_path, "rb") as f:
-        reader = make_reader(f)
-        for _ in reader.iter_messages():
+        reader = make_reader(f, decoder_factories=[DecoderFactory()])
+        for _ in reader.iter_decoded_messages():
             pass
     elapsed = timedelta(seconds=time.perf_counter() - start_time)
     logger.info(f"MCAP reader, sequential read, no decoding: {elapsed}")
+    return BenchmarkResult(
+        output_file=mcap_path,
+        size_mb=mcap_path.stat().st_size / 1024 / 1024,
+        duration=elapsed,
+    )
 
 
-def benchmark_rerun_reader(rerun_path: Path) -> None:
+def benchmark_rerun_reader(rerun_path: Path) -> BenchmarkResult:
     start_time = time.perf_counter()
     recording = rr.dataframe.load_recording(rerun_path)
     view = recording.view(index="robot_time", contents="/**")
@@ -202,20 +208,26 @@ def benchmark_rerun_reader(rerun_path: Path) -> None:
         pass
     elapsed = timedelta(seconds=time.perf_counter() - start_time)
     logger.info(f"Rerun reader, sequential read, no decoding: {elapsed}")
+    return BenchmarkResult(
+        output_file=rerun_path,
+        size_mb=rerun_path.stat().st_size / 1024 / 1024,
+        duration=elapsed,
+    )
 
 
-def main():
+def run_benchmark_reader() -> tuple[BenchmarkResult, BenchmarkResult]:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     # Generate dataset once
     dataset = make_dataset()
 
     # Write to both formats
     write_mcap_dataset(dataset, OUTPUT_DIR / "dataset.mcap")
-    benchmark_mcap_reader(OUTPUT_DIR / "dataset.mcap")
+    mcap_result = benchmark_mcap_reader(OUTPUT_DIR / "dataset.mcap")
 
     write_rerun_dataset(dataset, OUTPUT_DIR / "dataset.rrd")
-    benchmark_rerun_reader(OUTPUT_DIR / "dataset.rrd")
+    rerun_result = benchmark_rerun_reader(OUTPUT_DIR / "dataset.rrd")
+    return mcap_result, rerun_result
 
 
 if __name__ == "__main__":
-    main()
+    run_benchmark_reader()

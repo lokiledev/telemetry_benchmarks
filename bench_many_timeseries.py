@@ -13,7 +13,7 @@ from mcap.writer import Writer
 from numpy.typing import NDArray
 from tqdm import tqdm
 
-from telemetry_benchmarks.sim.config import OUTPUT_DIR
+from telemetry_benchmarks.sim.config import OUTPUT_DIR, BenchmarkResult
 from telemetry_benchmarks.sim.mcap_datalogger import build_file_descriptor_set
 from telemetry_benchmarks.sim.pb2.joint_state_pb2 import JointPositions
 
@@ -45,7 +45,7 @@ def make_data() -> NDArray[np.float32]:
     return np.column_stack((t, result))
 
 
-def benchmark_foxglove_many_timeseries(data: NDArray[np.float32]) -> None:
+def benchmark_foxglove_many_timeseries(data: NDArray[np.float32]) -> BenchmarkResult:
     output_path = OUTPUT_DIR / "many_timeseries.mcap"
     if output_path.exists():
         output_path.unlink()
@@ -80,9 +80,14 @@ def benchmark_foxglove_many_timeseries(data: NDArray[np.float32]) -> None:
     logger.info(
         f"Foxglove MCAP size: {mcap_size / 1024 / 1024:.2f} MB, write time: {elapsed}"
     )
+    return BenchmarkResult(
+        output_file=output_path,
+        size_mb=mcap_size / 1024 / 1024,
+        duration=timedelta(seconds=elapsed),
+    )
 
 
-def benchmark_rerun_many_timeseries(data: NDArray[np.float32]) -> None:
+def benchmark_rerun_many_timeseries(data: NDArray[np.float32]) -> BenchmarkResult:
     rr.init("many_timeseries")
     rr.save(OUTPUT_DIR / "many_timeseries.rrd")
     start_time = time.perf_counter()
@@ -94,14 +99,20 @@ def benchmark_rerun_many_timeseries(data: NDArray[np.float32]) -> None:
     rr.init("many_timeseries")  # force flush
     rrd_size = (OUTPUT_DIR / "many_timeseries.rrd").stat().st_size
     logger.info(f"Rerun size: {rrd_size / 1024 / 1024:.2f} MB, write time: {elapsed}")
+    return BenchmarkResult(
+        output_file=OUTPUT_DIR / "many_timeseries.rrd",
+        size_mb=rrd_size / 1024 / 1024,
+        duration=elapsed,
+    )
 
 
-def main():
+def run_benchmark_many_timeseries() -> tuple[BenchmarkResult, BenchmarkResult]:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     data = make_data()
-    benchmark_foxglove_many_timeseries(data)
-    benchmark_rerun_many_timeseries(data)
+    foxglove_result = benchmark_foxglove_many_timeseries(data)
+    rerun_result = benchmark_rerun_many_timeseries(data)
+    return foxglove_result, rerun_result
 
 
 if __name__ == "__main__":
-    main()
+    run_benchmark_many_timeseries()

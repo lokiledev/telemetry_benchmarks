@@ -17,7 +17,7 @@ from foxglove.schemas import (
 from loguru import logger
 from numpy.typing import NDArray
 
-from telemetry_benchmarks.sim.config import OUTPUT_DIR
+from telemetry_benchmarks.sim.config import OUTPUT_DIR, BenchmarkResult
 
 SAMPLING_RATE_HZ = 1000
 DURATION_S = 3600
@@ -53,7 +53,7 @@ def make_pointcloud() -> NDArray[np.float64]:
     return np.array(data)
 
 
-def benchmark_foxglove_pointcloud(data: NDArray[np.float64]) -> None:
+def benchmark_foxglove_pointcloud(data: NDArray[np.float64]) -> BenchmarkResult:
     channel = PointCloudChannel(topic="/log1")
     with foxglove.open_mcap(OUTPUT_DIR / "pointcloud.mcap", allow_overwrite=True):
         start_time = time.perf_counter()
@@ -82,9 +82,14 @@ def benchmark_foxglove_pointcloud(data: NDArray[np.float64]) -> None:
     logger.info(
         f"Foxglove MCAP size: {mcap_size / 1024 / 1024:.2f} MB, write time: {elapsed}"
     )
+    return BenchmarkResult(
+        output_file=OUTPUT_DIR / "pointcloud.mcap",
+        size_mb=mcap_size / 1024 / 1024,
+        duration=elapsed,
+    )
 
 
-def benchmark_rerun_pointcloud(data: NDArray[np.float64]) -> None:
+def benchmark_rerun_pointcloud(data: NDArray[np.float64]) -> BenchmarkResult:
     rr.init("pointcloud")
     rr.save(OUTPUT_DIR / "pointcloud.rrd")
     start_time = time.perf_counter()
@@ -94,9 +99,14 @@ def benchmark_rerun_pointcloud(data: NDArray[np.float64]) -> None:
     elapsed = timedelta(seconds=time.perf_counter() - start_time)
     rrd_size = (OUTPUT_DIR / "pointcloud.rrd").stat().st_size
     logger.info(f"Rerun size: {rrd_size / 1024 / 1024:.2f} MB, write time: {elapsed}")
+    return BenchmarkResult(
+        output_file=OUTPUT_DIR / "pointcloud.rrd",
+        size_mb=rrd_size / 1024 / 1024,
+        duration=elapsed,
+    )
 
 
-def benchmark_rerun_pointcloud_column(data: NDArray[np.float64]) -> None:
+def benchmark_rerun_pointcloud_column(data: NDArray[np.float64]) -> BenchmarkResult:
     rr.init("pointcloud_column")
     rr.save(OUTPUT_DIR / "pointcloud_column.rrd")
 
@@ -116,15 +126,23 @@ def benchmark_rerun_pointcloud_column(data: NDArray[np.float64]) -> None:
     rr.init("pointcloud_column")  # force flush
     rrd_size = (OUTPUT_DIR / "pointcloud_column.rrd").stat().st_size
     logger.info(f"Rerun size: {rrd_size / 1024 / 1024:.2f} MB, write time: {elapsed}")
+    return BenchmarkResult(
+        output_file=OUTPUT_DIR / "pointcloud_column.rrd",
+        size_mb=rrd_size / 1024 / 1024,
+        duration=elapsed,
+    )
 
 
-def main():
+def run_benchmark_single_pointcloud() -> tuple[
+    BenchmarkResult, BenchmarkResult, BenchmarkResult
+]:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     points = make_pointcloud()
-    benchmark_foxglove_pointcloud(points)
-    benchmark_rerun_pointcloud(points)
-    benchmark_rerun_pointcloud_column(points)
+    foxglove_result = benchmark_foxglove_pointcloud(points)
+    rerun_result = benchmark_rerun_pointcloud(points)
+    rerun_column_result = benchmark_rerun_pointcloud_column(points)
+    return foxglove_result, rerun_result, rerun_column_result
 
 
 if __name__ == "__main__":
-    main()
+    run_benchmark_single_pointcloud()

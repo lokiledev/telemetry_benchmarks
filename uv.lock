@@ -1536,6 +1536,19 @@ wheels = [
 ]
 
 [[package]]
+name = "mcap-protobuf-support"
+version = "0.5.3"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "mcap" },
+    { name = "protobuf" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/3e/a0/c546998ffccc26f3edfc4f9b004fe7ab7f80659f9d63124c8dcfd5e6b09a/mcap_protobuf_support-0.5.3.tar.gz", hash = "sha256:0545ed005cdc6ac22c5d87a7d8574f0e9adb0c5da7b0f46ae896f5702fc1a250", size = 7042, upload-time = "2025-01-29T22:17:07.657Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/9c/2e/023519eca2606e1837a926f5f6d9108a34b206ec0082c93fc69a96d24a36/mcap_protobuf_support-0.5.3-py3-none-any.whl", hash = "sha256:2cdfe7082f26f7da1bae8fa91c9196820562d03dccf39d4e4de11e8287f92dcb", size = 7283, upload-time = "2025-01-29T22:17:06.388Z" },
+]
+
+[[package]]
 name = "mdurl"
 version = "0.1.2"
 source = { registry = "https://pypi.org/simple" }
@@ -2992,6 +3005,7 @@ dependencies = [
     { name = "genesis-world" },
     { name = "loguru" },
     { name = "mcap" },
+    { name = "mcap-protobuf-support" },
     { name = "numpy", version = "2.2.6", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
     { name = "numpy", version = "2.3.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "pandas" },
@@ -3011,6 +3025,7 @@ requires-dist = [
     { name = "genesis-world", specifier = ">=0.3.7" },
     { name = "loguru", specifier = ">=0.7.3" },
     { name = "mcap", specifier = ">=1.3.0" },
+    { name = "mcap-protobuf-support", specifier = ">=0.5.3" },
     { name = "numpy", specifier = ">=2.2.6" },
     { name = "pandas", specifier = ">=2.3.3" },
     { name = "protobuf", specifier = ">=6.33.1" },

@@ -15,7 +15,7 @@ from loguru import logger
 from numpy.typing import NDArray
 from tqdm import tqdm
 
-from telemetry_benchmarks.sim.config import OUTPUT_DIR
+from telemetry_benchmarks.sim.config import OUTPUT_DIR, BenchmarkResult
 
 SAMPLING_RATE_HZ = 1000
 DURATION_S = 3600
@@ -32,7 +32,7 @@ def make_data() -> NDArray[np.float64]:
     return np.column_stack((t, x, y, z))
 
 
-def benchmark_foxglove_single_timeseries(data: NDArray[np.float64]) -> None:
+def benchmark_foxglove_single_timeseries(data: NDArray[np.float64]) -> BenchmarkResult:
     channel = Point3Channel(topic="/log1")
     with foxglove.open_mcap(
         OUTPUT_DIR / "single_timeseries.mcap", allow_overwrite=True
@@ -48,9 +48,14 @@ def benchmark_foxglove_single_timeseries(data: NDArray[np.float64]) -> None:
     logger.info(
         f"Foxglove MCAP size: {mcap_size / 1024 / 1024:.2f} MB, write time: {elapsed}"
     )
+    return BenchmarkResult(
+        output_file=OUTPUT_DIR / "single_timeseries.mcap",
+        size_mb=mcap_size / 1024 / 1024,
+        duration=elapsed,
+    )
 
 
-def benchmark_rerun_single_timeseries(data: NDArray[np.float64]) -> None:
+def benchmark_rerun_single_timeseries(data: NDArray[np.float64]) -> BenchmarkResult:
     rr.init("single_timeseries")
     rr.save(OUTPUT_DIR / "single_timeseries.rrd")
     start_time = time.perf_counter()
@@ -60,9 +65,14 @@ def benchmark_rerun_single_timeseries(data: NDArray[np.float64]) -> None:
     elapsed = timedelta(seconds=time.perf_counter() - start_time)
     rrd_size = (OUTPUT_DIR / "single_timeseries.rrd").stat().st_size
     logger.info(f"Rerun size: {rrd_size / 1024 / 1024:.2f} MB, write time: {elapsed}")
+    return BenchmarkResult(
+        output_file=OUTPUT_DIR / "single_timeseries.rrd",
+        size_mb=rrd_size / 1024 / 1024,
+        duration=elapsed,
+    )
 
 
-def benchmark_rerun_column(data: NDArray[np.float64]) -> None:
+def benchmark_rerun_column(data: NDArray[np.float64]) -> BenchmarkResult:
     rr.init("single_timeseries_column")
     rr.save(OUTPUT_DIR / "single_timeseries_column.rrd")
     start_time = time.perf_counter()
@@ -79,15 +89,23 @@ def benchmark_rerun_column(data: NDArray[np.float64]) -> None:
     rr.init("single_timeseries_column")  # force flush
     rrd_size = (OUTPUT_DIR / "single_timeseries_column.rrd").stat().st_size
     logger.info(f"Rerun size: {rrd_size / 1024 / 1024:.2f} MB, write time: {elapsed}")
+    return BenchmarkResult(
+        output_file=OUTPUT_DIR / "single_timeseries_column.rrd",
+        size_mb=rrd_size / 1024 / 1024,
+        duration=elapsed,
+    )
 
 
-def main():
+def run_benchmark_single_timeseries() -> tuple[
+    BenchmarkResult, BenchmarkResult, BenchmarkResult
+]:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     data = make_data()
-    benchmark_foxglove_single_timeseries(data)
-    benchmark_rerun_single_timeseries(data)
-    benchmark_rerun_column(data)
+    foxglove_result = benchmark_foxglove_single_timeseries(data)
+    rerun_result = benchmark_rerun_single_timeseries(data)
+    rerun_column_result = benchmark_rerun_column(data)
+    return foxglove_result, rerun_result, rerun_column_result
 
 
 if __name__ == "__main__":
-    main()
+    run_benchmark_single_timeseries()

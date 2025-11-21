@@ -126,11 +126,21 @@ foxglove-studio output/robot_arm.mcap
 rerun output/robot_arm.rrd
 ```
 
-TODO[loik]: share viewer layouts to simplify replay
-
 ## Results
 
-TBD
+| Benchmark | Format | File Size (MB) | Duration |
+|-----------|--------|----------------|----------|
+| Many Timeseries | Foxglove MCAP | 519.37 | 37s |
+| Many Timeseries | Rerun RRD | 680.19 | 1m 7s |
+| Single Timeseries | Foxglove MCAP | 169.81 | 12s |
+| Single Timeseries | Rerun RRD | 119.18 | 2m 30s |
+| Single Timeseries | Rerun RRD (Column) | 131.28 | 0s |
+| Single Pointcloud | Foxglove MCAP | 1563.69 | 7s |
+| Single Pointcloud | Rerun RRD | 829.42 | 2s |
+| Single Pointcloud | Rerun RRD (Column) | 828.45 | 0s |
+| Reader | Foxglove MCAP | 669.44 | 0s |
+| Reader | Rerun RRD | 673.04 | 1s |
+
 
 ## Contributing
 
