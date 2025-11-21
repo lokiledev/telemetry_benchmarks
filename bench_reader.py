@@ -199,6 +199,27 @@ def benchmark_mcap_reader(mcap_path: Path) -> BenchmarkResult:
     )
 
 
+def benchmark_mcap_reader_random_access(mcap_path: Path) -> BenchmarkResult:
+    start_time = time.perf_counter()
+
+    with open(mcap_path, "rb") as f:
+        reader = make_reader(f, decoder_factories=[DecoderFactory()])
+        start, end = (
+            reader.get_summary().statistics.message_start_time,
+            reader.get_summary().statistics.message_end_time,
+        )
+        for index in np.random.randint(start, end, 32):
+            for _ in reader.iter_decoded_messages(start_time=index, end_time=index):
+                pass
+    elapsed = timedelta(seconds=time.perf_counter() - start_time)
+    logger.info(f"MCAP reader, random access read, no decoding: {elapsed}")
+    return BenchmarkResult(
+        output_file=mcap_path,
+        size_mb=mcap_path.stat().st_size / 1024 / 1024,
+        duration=elapsed,
+    )
+
+
 def benchmark_rerun_reader(rerun_path: Path) -> BenchmarkResult:
     start_time = time.perf_counter()
     recording = rr.dataframe.load_recording(rerun_path)
@@ -215,6 +236,24 @@ def benchmark_rerun_reader(rerun_path: Path) -> BenchmarkResult:
     )
 
 
+def benchmark_rerun_reader_random_access(rerun_path: Path) -> BenchmarkResult:
+    start_time = time.perf_counter()
+    recording = rr.dataframe.load_recording(rerun_path)
+    view = recording.view(index="robot_time", contents="/**")
+    df = view.select().read_pandas()
+    indexes = np.random.randint(0, len(df), 32)
+    for index in indexes:
+        for col in range(len(df.columns)):
+            _ = df.iat[index, col]
+    elapsed = timedelta(seconds=time.perf_counter() - start_time)
+    logger.info(f"Rerun reader, random access read, no decoding: {elapsed}")
+    return BenchmarkResult(
+        output_file=rerun_path,
+        size_mb=rerun_path.stat().st_size / 1024 / 1024,
+        duration=elapsed,
+    )
+
+
 def run_benchmark_reader() -> tuple[BenchmarkResult, BenchmarkResult]:
     OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
     # Generate dataset once
@@ -224,9 +263,21 @@ def run_benchmark_reader() -> tuple[BenchmarkResult, BenchmarkResult]:
     write_mcap_dataset(dataset, OUTPUT_DIR / "dataset.mcap")
     mcap_result = benchmark_mcap_reader(OUTPUT_DIR / "dataset.mcap")
 
+    mcap_random_access_result = benchmark_mcap_reader_random_access(
+        OUTPUT_DIR / "dataset.mcap"
+    )
+
     write_rerun_dataset(dataset, OUTPUT_DIR / "dataset.rrd")
     rerun_result = benchmark_rerun_reader(OUTPUT_DIR / "dataset.rrd")
-    return mcap_result, rerun_result
+    rerun_random_access_result = benchmark_rerun_reader_random_access(
+        OUTPUT_DIR / "dataset.rrd"
+    )
+    return (
+        mcap_result,
+        mcap_random_access_result,
+        rerun_result,
+        rerun_random_access_result,
+    )
 
 
 if __name__ == "__main__":

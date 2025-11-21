@@ -80,7 +80,7 @@ def benchmark_rerun_column(data: NDArray[np.float64]) -> BenchmarkResult:
     # We need to unpack it to get individual ComponentColumn objects
     rr.send_columns(
         "log1",
-        indexes=[rr.TimeColumn("log1", duration=data[:, 0])],
+        indexes=[rr.TimeColumn("log1_time", duration=data[:, 0])],
         columns=rr.Scalars.columns(
             scalars=data[:, 1:]
         ),  # Pass the ComponentColumnList directly (it's iterable)

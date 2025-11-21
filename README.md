@@ -130,17 +130,19 @@ rerun output/robot_arm.rrd
 
 | Benchmark | Format | File Size (MB) | Duration |
 |-----------|--------|----------------|----------|
-| Many Timeseries | Foxglove MCAP | 519.37 | 23s |
-| Many Timeseries | Rerun RRD | 679.85 | 52s |
-| Many Timeseries | Rerun RRD (Column) | 652.74 | 0s |
-| Single Timeseries | Foxglove MCAP | 169.81 | 10s |
-| Single Timeseries | Rerun RRD | 92.22 | 1m 49s |
-| Single Timeseries | Rerun RRD (Column) | 131.28 | 0s |
-| Single Pointcloud | Foxglove MCAP | 1563.69 | 7s |
-| Single Pointcloud | Rerun RRD | 829.41 | 2s |
-| Single Pointcloud | Rerun RRD (Column) | 828.45 | 0s |
-| Reader | Foxglove MCAP | 669.49 | 0s |
-| Reader | Rerun RRD | 673.10 | 1s |
+| Many Timeseries | Foxglove MCAP | 519.37 | 0:00:29.356378 |
+| Many Timeseries | Rerun RRD | 679.92 | 0:00:56.065598 |
+| Many Timeseries | Rerun RRD (Column) | 652.74 | 0:00:00.224108 |
+| Single Timeseries | Foxglove MCAP | 169.81 | 0:00:10.606665 |
+| Single Timeseries | Rerun RRD | 89.81 | 0:01:51.583999 |
+| Single Timeseries | Rerun RRD (Column) | 131.28 | 0:00:00.136080 |
+| Single Pointcloud | Foxglove MCAP | 1563.69 | 0:00:07.199298 |
+| Single Pointcloud | Rerun RRD | 829.41 | 0:00:02.564451 |
+| Single Pointcloud | Rerun RRD (Column) | 828.45 | 0:00:00.191245 |
+| Reader | Foxglove MCAP | 669.44 | 0:00:00.845047 |
+| Reader | Foxglove MCAP (Random Access) | 669.44 | 0:00:02.246469 |
+| Reader | Rerun RRD | 673.04 | 0:00:01.513706 |
+| Reader | Rerun RRD (Random Access) | 673.04 | 0:00:01.070348 |
 
 ## Contributing
 
