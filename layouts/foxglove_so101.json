@@ -1,0 +1,315 @@
+{
+  "configById": {
+    "3D!4an3c78": {
+      "cameraState": {
+        "perspective": true,
+        "distance": 1.253443265366247,
+        "phi": 43.033882198286534,
+        "thetaOffset": 62.00686506340866,
+        "targetOffset": [
+          0.39922441330296426,
+          -0.047318691118796385,
+          1.653950596872205e-16
+        ],
+        "target": [
+          0,
+          0,
+          0
+        ],
+        "targetOrientation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "fovy": 45,
+        "near": 0.5,
+        "far": 5000,
+        "logDepth": false
+      },
+      "followMode": "follow-pose",
+      "scene": {
+        "transforms": {
+          "labelSize": 0.06,
+          "axisSize": 0.06,
+          "visible": true,
+          "showLabel": false,
+          "lineWidth": 2.6
+        },
+        "meshUpAxis": "z_up",
+        "ignoreColladaUpAxis": false
+      },
+      "transforms": {
+        "frame:": {
+          "visible": false
+        },
+        "frame:moving_jaw_so101_v1_link": {
+          "rpyCoefficient": [
+            0,
+            0,
+            -4.2
+          ],
+          "visible": false
+        },
+        "frame:base_link": {
+          "visible": false
+        },
+        "frame:camera_link": {
+          "visible": true
+        },
+        "frame:gripper_link": {
+          "visible": true
+        },
+        "frame:lower_arm_link": {
+          "visible": false
+        },
+        "frame:shoulder_link": {
+          "visible": false
+        },
+        "frame:upper_arm_link": {
+          "visible": false
+        },
+        "frame:wrist_link": {
+          "visible": false
+        },
+        "frame:gripper_frame_link": {
+          "visible": false
+        }
+      },
+      "topics": {
+        "/video": {
+          "visible": true,
+          "planarProjectionFactor": 0,
+          "cameraInfoTopic": "/camera_calibration",
+          "distance": -0.5
+        },
+        "/camera_calibration": {
+          "visible": true,
+          "planarProjectionFactor": 0,
+          "width": 0.004,
+          "distance": -0.5
+        }
+      },
+      "layers": {
+        "grid": {
+          "visible": true,
+          "drawBehind": false,
+          "frameLocked": true,
+          "label": "Grid",
+          "instanceId": "0a88790b-b48d-439b-82f4-93ad90a2fb19",
+          "layerId": "foxglove.Grid",
+          "size": 10,
+          "divisions": 10,
+          "lineWidth": 1,
+          "color": "#248eff",
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "rotation": [
+            0,
+            0,
+            0
+          ]
+        },
+        "41b70233-f98c-4fd3-bcd5-ac70c01e3742": {
+          "displayMode": "visual",
+          "fallbackColor": "#ffffff",
+          "showAxis": false,
+          "axisScale": 1,
+          "showOutlines": true,
+          "opacity": 1,
+          "visible": true,
+          "frameLocked": true,
+          "instanceId": "41b70233-f98c-4fd3-bcd5-ac70c01e3742",
+          "label": "URDF",
+          "layerId": "foxglove.Urdf",
+          "sourceType": "filePath",
+          "url": "",
+          "filePath": "/home/loki/workspaces/otss/telemetry_benchmarks/src/telemetry_benchmarks/sim/SO101/so101_new_calib.urdf ",
+          "parameter": "",
+          "topic": "",
+          "framePrefix": "",
+          "order": 1,
+          "links": {
+            "gripper_link": {
+              "visible": true
+            },
+            "gripper_frame_link": {
+              "visible": true
+            },
+            "moving_jaw_so101_v1_link": {
+              "visible": true
+            },
+            "base_link": {
+              "visible": true
+            },
+            "shoulder_link": {
+              "visible": true
+            }
+          }
+        }
+      },
+      "publish": {
+        "type": "point",
+        "poseTopic": "/move_base_simple/goal",
+        "pointTopic": "/clicked_point",
+        "poseEstimateTopic": "/initialpose",
+        "poseEstimateXDeviation": 0.5,
+        "poseEstimateYDeviation": 0.5,
+        "poseEstimateThetaDeviation": 0.26179939
+      },
+      "imageMode": {},
+      "followTf": "base_link"
+    },
+    "Image!1in8xx9": {
+      "cameraState": {
+        "distance": 20,
+        "perspective": true,
+        "phi": 60,
+        "target": [
+          0,
+          0,
+          0
+        ],
+        "targetOffset": [
+          0,
+          0,
+          0
+        ],
+        "targetOrientation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "thetaOffset": 45,
+        "fovy": 45,
+        "near": 0.5,
+        "far": 5000
+      },
+      "followMode": "follow-pose",
+      "scene": {
+        "transforms": {
+          "visible": false
+        },
+        "meshUpAxis": "z_up"
+      },
+      "transforms": {
+        "frame:moving_jaw_so101_v1_link": {
+          "visible": true
+        },
+        "frame:base_link": {
+          "visible": false
+        }
+      },
+      "topics": {},
+      "layers": {
+        "c184bc71-da86-4f34-958c-19e83ebd3eec": {
+          "displayMode": "auto",
+          "fallbackColor": "#ffffff",
+          "showAxis": false,
+          "axisScale": 1,
+          "showOutlines": true,
+          "opacity": 1,
+          "visible": true,
+          "frameLocked": true,
+          "instanceId": "c184bc71-da86-4f34-958c-19e83ebd3eec",
+          "label": "URDF",
+          "layerId": "foxglove.Urdf",
+          "sourceType": "filePath",
+          "url": "",
+          "filePath": "/home/loki/workspaces/otss/telemetry_benchmarks/src/telemetry_benchmarks/sim/SO101/so101_new_calib.urdf ",
+          "parameter": "",
+          "topic": "",
+          "framePrefix": "",
+          "order": 1
+        }
+      },
+      "publish": {
+        "type": "point",
+        "poseTopic": "/move_base_simple/goal",
+        "pointTopic": "/clicked_point",
+        "poseEstimateTopic": "/initialpose",
+        "poseEstimateXDeviation": 0.5,
+        "poseEstimateYDeviation": 0.5,
+        "poseEstimateThetaDeviation": 0.26179939
+      },
+      "imageMode": {
+        "imageTopic": "/video",
+        "calibrationTopic": "/camera_calibration"
+      }
+    },
+    "Plot!4kb3tk0": {
+      "paths": [
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_states/elbow_flex.position",
+          "enabled": true,
+          "color": "#4e98e2",
+          "id": "d12f6200-a52e-4301-b07f-65b97434b4ee"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_states/shoulder_pan.position",
+          "enabled": true,
+          "color": "#f5774d",
+          "id": "212ba5f4-7db4-49dd-989c-d5db7ab6b9c7"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_states/shoulder_lift.position",
+          "enabled": true,
+          "color": "#f7df71",
+          "id": "d035dde8-78cb-4e3e-9adb-a7c536c798d2"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_states/wrist_flex.position",
+          "enabled": true,
+          "color": "#5cd6a9",
+          "id": "7804d5ec-391e-4b04-b93d-c93edee628f1"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_states/wrist_roll.position",
+          "enabled": true,
+          "color": "#61cbff",
+          "id": "95584057-a915-4b26-9b11-ef7a35a5d168"
+        },
+        {
+          "timestampMethod": "receiveTime",
+          "value": "/joint_states/gripper.position",
+          "enabled": true,
+          "color": "#a395e2",
+          "id": "5afa7971-502d-47b1-8bb0-42d99fb33c89"
+        }
+      ],
+      "showXAxisLabels": true,
+      "showYAxisLabels": true,
+      "showLegend": true,
+      "legendDisplay": "floating",
+      "showPlotValuesInLegend": false,
+      "isSynced": true,
+      "xAxisVal": "timestamp",
+      "sidebarDimension": 240,
+      "foxglovePanelTitle": "Joint States"
+    }
+  },
+  "globalVariables": {},
+  "userNodes": {},
+  "playbackConfig": {
+    "speed": 1
+  },
+  "layout": {
+    "first": "3D!4an3c78",
+    "second": {
+      "first": "Image!1in8xx9",
+      "second": "Plot!4kb3tk0",
+      "direction": "column"
+    },
+    "direction": "row",
+    "splitPercentage": 50.31958163858222
+  }
+}
