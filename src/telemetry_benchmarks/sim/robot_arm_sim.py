@@ -24,6 +24,7 @@ EEF_TARGET_QUAT = np.array([0.0, 0.0, 1.0, 0.0])
 class Env:
     def __init__(self, logger: DataLogger | None = None):
         self.logger = logger or NullLogger()
+        self.dt = 0.005
         self.last_camera_timestamp = 0
         self.step_number = 0
         self.phase: GraspState = "idle"
@@ -34,12 +35,12 @@ class Env:
                 camera_lookat=(0.0, 0.0, 0.25),
                 camera_fov=30,  # RealSense D455 horizontal FOV
                 res=(960, 640),
-                max_FPS=60,
+                max_FPS=1 / self.dt,
+                run_in_thread=False,
             ),
             vis_options=gs.options.VisOptions(show_link_frame=False, show_cameras=True),
             sim_options=gs.options.SimOptions(
-                dt=0.004,  # 250 Hz x4 = 1KHz
-                substeps=4,
+                dt=self.dt,
             ),
             rigid_options=gs.options.RigidOptions(
                 box_box_detection=True,
@@ -59,6 +60,7 @@ class Env:
         self.camera = self.scene.add_camera(
             res=CAMERA_RESOLUTION,
             fov=87,  # RealSense D455 horizontal FOV
+            GUI=True,
         )
 
         self.scene.build()
@@ -88,8 +90,8 @@ class Env:
         self.end_effector = self.robot.get_link("gripper_frame_link")
         cam_offset = np.array([0.1, 0.0, 0.2])
         cam_offset_mat = np.eye(4)
-        # 90° rotation around Z axis
-        angle = np.pi / 2  # 90 degrees in radians
+        # -90° rotation around Z axis
+        angle = -np.pi / 2  # 90 degrees in radians
         cam_offset_mat[0, 0] = np.cos(angle)
         cam_offset_mat[0, 1] = -np.sin(angle)
         cam_offset_mat[1, 0] = np.sin(angle)
@@ -103,7 +105,6 @@ class Env:
             quat=EEF_TARGET_QUAT,
         )
         self.robot.control_dofs_position(self.qpos, self.dofs_idx)
-        self.scene.step()
         self.camera.move_to_attach()
         self.scene.step()
 
@@ -128,7 +129,7 @@ class Env:
             transforms = self.get_link_transforms()
             self.logger.log_transforms(transforms, timestamp)
         qpos = self.robot.get_qpos(self.dofs_idx).cpu().numpy()
-        self.logger.log_joint_states(qpos, timestamp)
+        self.logger.log_joint_states(qpos, timestamp, self.joints)
 
     def get_link_transforms(self) -> list[NamedTransform]:
         transforms = []
